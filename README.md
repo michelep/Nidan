@@ -77,6 +77,10 @@ If an job failed with "Unexpected error: (<type 'exceptions.AttributeError'>, At
 
 If agent failed to connect with "requests.exceptions.ConnectionError: HTTPSConnectionPool(host='localhost', port=443): Max retries exceeded with url: /rest/agent/start (Caused by NewConnectionError('<urllib3.connection.VerifiedHTTPSConnection object at 0x7f43258d1150>: Failed to establish a new connection: [Errno 111] Connection refused',))" you have to checy your apache2 ssl configuration.
 
+## Need support ?
+
+Join our public ML [nidan-users-ml](https://groups.google.com/forum/#!forum/nidan-users-ml "Nidan users ML") to help and receive support from users and developers
+
 ## Changelog
 
 v0.0.1pre1 (4 Sep 2017) - First alpha-stage public release - Still WIP !
