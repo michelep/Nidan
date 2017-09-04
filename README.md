@@ -32,12 +32,16 @@ For Agents:
 * Python schedule (pip install schedule - https://schedule.readthedocs.io/en/stable/)
 * Python jsonpickle (pip install jsonpickle)
 
+![Hosts detected](./assets/screenshot_3.png)
+
 ## Install Web frontend and REST server
 
 Create a new database ('nidan' ?) and use /sql/nidan.sql to recreate tables. Copy all /web content to web server root folder (usually /var/www/), 
 enable apache2 mod-rewrite if not ('a2enmod rewrite' as root) and check/change db access configuration in common.inc.php
 
 Open a browser and go to your web server. Default username:password is "admin@localhost:admin". 
+
+![Login page](./assets/screenshot_2.png)
 
 ## Install Agents
 
@@ -48,6 +52,8 @@ apiKey=*[this agent API key]*
 serverUrl=*[URL of the server - i.e. https://localhost/rest]*`
 
 then save and run nidan.py
+
+![Agent while scanning](./assets/screenshot_1.png)
 
 ## Troubleshoting
 
