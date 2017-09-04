@@ -37,18 +37,18 @@ enable apache2 mod-rewrite if not ('a2enmod rewrite' as root) and check/change d
 
 Don't forget to enable "AllowOverride All" in virtual host instance, like:
 
-<VirtualHost _default_:80>
-    ServerAdmin webmaster@localhost
+    <VirtualHost _default_:80>
+	ServerAdmin webmaster@localhost
 
-    DocumentRoot /var/www/html
+	DocumentRoot /var/www/html
 
-    ErrorLog ${APACHE_LOG_DIR}/nidan-error.log
-    CustomLog ${APACHE_LOG_DIR}/nidan-access.log combined
+	ErrorLog ${APACHE_LOG_DIR}/nidan-error.log
+	CustomLog ${APACHE_LOG_DIR}/nidan-access.log combined
 
-    <Directory /var/www/html>
-        AllowOverride All
-    </Directory>
-</VirtualHost>
+	<Directory /var/www/html>
+    	    AllowOverride All
+	</Directory>
+    </VirtualHost>
 
 and, if you want to use SSL, remember to enable ssl module ('a2enmod ssl' as root).
 
@@ -58,11 +58,13 @@ Open a browser and go to your web server. Default username:password is "admin@lo
 
 Copy all files under 'agent' folder where you want to run an agent (also on the same machine as frontend). Open nidan.cfg with a text editor ('nano' is ok) and configure:
 
-[Agent]
-apiKey=*[this agent API key]*
-serverUrl=*[URL of the server - i.e. https://localhost/rest]*
+    [Agent]
+    apiKey=*[this agent API key]*
+    serverUrl=*[URL of the server - i.e. https://localhost/rest]*
 
 then save and run nidan.py
+
+Please note that if you use "https", agent try to connect to SSL port (TCP 443) and fail if something don't work.
 
 ## Troubleshoting
 
