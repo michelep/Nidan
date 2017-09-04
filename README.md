@@ -15,9 +15,6 @@ it into a different server (ensure to setup correctly connection to the DBMS). I
 
 Nidan agent can be run also as non-privileged users, but scanning tecniques will be not accurate as running as root
 
-Installation
-------------
-
 ## Prerequisites 
 
 For Web frontend and REST server:
@@ -32,8 +29,6 @@ For Agents:
 * Python schedule (pip install schedule - https://schedule.readthedocs.io/en/stable/)
 * Python jsonpickle (pip install jsonpickle)
 * Python request (pip install request)
-
-![Hosts detected](/assets/screenshot_3.png?raw=true)
 
 ## Install Web frontend and REST server
 
@@ -59,8 +54,6 @@ and, if you want to use SSL, remember to enable ssl module ('a2enmod ssl' as roo
 
 Open a browser and go to your web server. Default username:password is "admin@localhost:admin". 
 
-![Login page](/assets/screenshot_2.png?raw=true)
-
 ## Install Agents
 
 Copy all files under 'agent' folder where you want to run an agent (also on the same machine as frontend). Open nidan.cfg with a text editor ('nano' is ok) and configure:
@@ -70,8 +63,6 @@ apiKey=*[this agent API key]*
 serverUrl=*[URL of the server - i.e. https://localhost/rest]*
 
 then save and run nidan.py
-
-![Agent while scanning](/assets/screenshot_1.png?raw=true)
 
 ## Troubleshoting
 
