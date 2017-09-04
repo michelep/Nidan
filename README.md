@@ -52,7 +52,12 @@ Don't forget to enable "AllowOverride All" in virtual host instance, like:
 
 and, if you want to use SSL, remember to enable ssl module ('a2enmod ssl' as root).
 
-Open a browser and go to your web server. Default username:password is "admin@localhost:admin". 
+Now add a new cron instance with 'crontab -e', that runs cron.php script every 15 minutes, adding this line:
+
+    # m h  dom mon dow   command
+    */15 * * * * php /var/www/html/cron.php &> /dev/null
+
+Open a browser and go to your web server. Default username:password is "admin@localhost:admin".
 
 ## Install Agents
 
