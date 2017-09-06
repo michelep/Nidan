@@ -60,6 +60,8 @@ Now add a new cron instance with 'crontab -e', that runs cron.php script every 5
 
 Open a browser and go to your web server. Default username:password is "admin@localhost:admin".
 
+![Web signin page](assets/screenshot_2.jpg "Web signin page")
+
 ## Install Agents
 
 Copy all files under 'agent' folder where you want to run an agent (also on the same machine as frontend). Open nidan.cfg with a text editor ('nano' is ok) and configure:
@@ -71,6 +73,8 @@ Copy all files under 'agent' folder where you want to run an agent (also on the 
 then save and run nidan.py
 
 Please note that if you use "https", agent try to connect to SSL port (TCP 443) and fail if something don't work.
+
+![Agent at work](assets/screenshot_1.jpg "Agent at work")
 
 ## Troubleshoting
 
