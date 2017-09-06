@@ -12,8 +12,72 @@ include "common_head.php";
 include_once "common_sidebar.php";
 ?>
 <main class="col-sm-9 offset-sm-3 col-md-10 offset-md-2 pt-3" id="contentDiv">
-  <h2>Networks</h2>
-  <div class="table-responsive">
+    <div class="row">
+        <div class="col-lg-3 col-md-6">
+            <div class="card card-inverse card-success">
+                <div class="card-block bg-success">
+                    <div class="rotate">
+                        <i class="fa fa-cubes fa-5x"></i>
+                    </div>
+                    <h6 class="text-uppercase">Networks</h6>
+                    <h1 class="display-1">
+		    <?php 
+		    $result = doQuery("SELECT ID FROM Networks;");
+		    echo mysqli_num_rows($result);
+		    ?>
+		    </h1>
+    		</div>
+	    </div>
+	</div><div class="col-lg-3 col-md-6">
+            <div class="card card-inverse card-danger">
+                <div class="card-block bg-danger">
+                    <div class="rotate">
+                        <i class="fa fa-laptop fa-4x"></i>
+                    </div>
+                    <h6 class="text-uppercase">Hosts</h6>
+                    <h1 class="display-1">
+		    <?php
+		    $result = doQuery("SELECT ID FROM Hosts;");
+		    echo mysqli_num_rows($result);
+		    ?>
+		    </h1>
+                </div>
+            </div>
+        </div><div class="col-lg-3 col-md-6">
+            <div class="card card-inverse card-info">
+                <div class="card-block bg-info">
+                    <div class="rotate">
+                        <i class="fa fa-cogs fa-5x"></i>
+                    </div>
+                    <h6 class="text-uppercase">Services</h6>
+                    <h1 class="display-1">
+		    <?php
+		    $result = doQuery("SELECT ID FROM Services;");
+		    echo mysqli_num_rows($result);
+		    ?>
+		    </h1>
+                </div>
+            </div>
+        </div><div class="col-lg-3 col-md-6">
+            <div class="card card-inverse card-warning">
+                <div class="card-block bg-warning">
+                    <div class="rotate">
+                        <i class="fa fa-plug fa-5x"></i>
+                    </div>
+                    <h6 class="text-uppercase">Agents Online</h6>
+                    <h1 class="display-1">
+		    <?php
+		    $result = doQuery("SELECT ID FROM Agents WHERE isOnline=1;");
+		    echo mysqli_num_rows($result);
+		    ?>
+		    </h1>
+                </div>
+    	    </div>
+    	</div>
+    </div>
+    <hr>
+    <h2>Networks</h2>
+    <div class="table-responsive">
 	<table class="table table-striped"><thead>
 	    <tr>
     		<th>Network</th>

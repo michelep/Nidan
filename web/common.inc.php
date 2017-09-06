@@ -200,6 +200,54 @@ function isChecked($value) {
     if($value) return "checked";
 }
 
+function getPagination($cur_page,$total_items,$base_url,$items_per_page=10) {
+
+    $num_pages = ceil($total_items/$items_per_page);
+
+    echo "<!-- TOTAL_ITEMS=$total_items NUM_PAGES=$num_pages -->";
+
+    if($cur_page <= 1) { // First page, no previous
+	$prev_page = false;
+    } else {
+	$prev_page = $cur_page-1;
+    }
+
+    if($cur_page >= $num_pages) { // Last page, no next
+	$next_page = false;
+    } else {
+	$next_page = $cur_page+1;
+    }
+
+    echo "<nav>
+	    <ul class='pagination justify-content-center'>
+		<li class='page-item ".($prev_page ? '':'disabled')."'>
+		    <a class='page-link' href='".($base_url.'?p='.$prev_page)."' tabindex='-1'>Previous</a>
+		</li>";
+    if(($cur_page - 3) > 0) {
+	$min = $num_pages-3;
+    } else {
+	$min=1;
+    }
+    if(($cur_page + 3) > $num_pages) {
+	$max = $num_pages;
+    } else {
+	$max=$num_pages;
+    }
+
+    for($p=$min;$p<=$max;$p++) {
+	echo "<li class='page-item ".(($p==$cur_page) ? 'active':'')."'>
+	    <a class='page-link'  href='".($base_url.'?p='.$p)."'>$p</a>
+	</li>";
+    }
+
+    echo "	<li class='page-item ".($next_page ? '':'disabled')."'>
+		    <a class='page-link' href='".($base_url.'?p='.$next_page)."'>Next</a>
+		</li>
+	    </ul>
+	</nav>";
+}
+
+
 function getClientIP() {
     if(getenv('HTTP_X_FORWARDED_FOR')) {
 	return getenv('REMOTE_ADDR')." (".getenv('HTTP_X_FORWARDED_FOR').")";

@@ -18,7 +18,6 @@ Nidan agent can be run also as non-privileged users, but scanning tecniques will
 ## Prerequisites 
 
 For Web frontend and REST server:
-* Python 2.x
 * PHP 5.x
 * Apache 2.4.x
 * MySQL 5.x or MariaDB
@@ -31,6 +30,8 @@ For Agents:
 * Python request (pip install request)
 
 ## Install Web frontend and REST server
+
+![Summary page](assets/screenshot_4.jpg "Summary page")
 
 Create a new database ('nidan' ?) and use /sql/nidan.sql to recreate tables. Copy all /web content to web server root folder (usually /var/www/),
 enable apache2 mod-rewrite if not ('a2enmod rewrite' as root) and check/change db access configuration in common.inc.php
@@ -77,13 +78,11 @@ If an job failed with "Unexpected error: (<type 'exceptions.AttributeError'>, At
 
 If agent failed to connect with "requests.exceptions.ConnectionError: HTTPSConnectionPool(host='localhost', port=443): Max retries exceeded with url: /rest/agent/start (Caused by NewConnectionError('<urllib3.connection.VerifiedHTTPSConnection object at 0x7f43258d1150>: Failed to establish a new connection: [Errno 111] Connection refused',))" you have to checy your apache2 ssl configuration.
 
+If agent raise an exception with this error: "Unexpected error: (<class 'nmap.nmap.PortScannerError'>, PortScannerError exception nmap program was not found in path." you need to install nmap with 'apt install nmap'
+
 ## Need support ?
 
 Join our public ML [nidan-users-ml](https://groups.google.com/forum/#!forum/nidan-users-ml "Nidan users ML") to help and receive support from users and developers
-
-## Changelog
-
-v0.0.1pre1 (4 Sep 2017) - First alpha-stage public release - Still WIP !
 
 ## Author
 

@@ -106,9 +106,13 @@ if(isset($_GET["id"])) {
 // NET OR FULL HOSTS LIST
 //
 //
-    $page_num = abs(intval(sanitize($_GET["p"])));
+    if(isset($_GET["p"])) {
+	$page_num = abs(intval(sanitize($_GET["p"])));
+    } else {
+	$page_num = 1;
+    }
 
-    $row_offs = $page_num * 10;
+    $row_offs = ($page_num-1) * 10;
 
     if(!empty($_GET["net"])) {
 	$net_id = intval(sanitize($_GET["net"]));
@@ -116,22 +120,12 @@ if(isset($_GET["id"])) {
 	$result = doQuery("SELECT ID FROM Hosts WHERE netId=$net_id;");
 	$total_rows = mysqli_num_rows($result);
 
-	if($row_offs > $total_rows) { 
-	    $row_offs = $total_rows - 10;
-	    $page_num = round($total_rows / 10);
-	}
-
 	// Show ALL HOSTS order by lastSeen first in network
 	$result = doQuery("SELECT ID,IP,MAC,Hostname,isOnline,addDate,TIMESTAMPDIFF(MINUTE,lastCheck,NOW()) AS lastCheck,stateChange FROM Hosts WHERE netId=$net_id LIMIT 10 OFFSET $row_offs;");
 	echo "<h2>All hosts in net $net_id</h2>";
     } else {
 	$result = doQuery("SELECT ID FROM Hosts;");
 	$total_rows = mysqli_num_rows($result);
-
-	if($row_offs > $total_rows) { 
-	    $row_offs = $total_rows - 10;
-	    $page_num = round($total_rows / 10);
-	}
 
 	// Show ALL HOSTS order by lastSeen first
 	$result = doQuery("SELECT ID,IP,MAC,Hostname,isOnline,addDate,TIMESTAMPDIFF(MINUTE,lastCheck,NOW()) AS lastCheck,stateChange FROM Hosts ORDER BY stateChange DESC LIMIT 10 OFFSET $row_offs;");
@@ -185,23 +179,27 @@ if(isset($_GET["id"])) {
 		    $service_port = $row["Port"];
 		    $service_proto = $row["Proto"];
 		    
-		    switch($tcp_services["$service_port/$service_proto"]["relevancy"]) {
-			default:
-			case 1:
-			    $service_relevancy = "default";
-			    break;
-			case 2:
-			    $service_relevancy = "primary";
-			    break;
-			case 3:
-			    $service_relevancy = "info";
-			    break;
-			case 4:
-			    $service_relevancy = "warning";
-			    break;
-			case 5:
-			    $service_relevancy = "danger";
-			    break;
+		    if(isset($tcp_services["$service_port/$service_proto"])) {
+			switch($tcp_services["$service_port/$service_proto"]["relevancy"]) {
+			    default:
+			    case 1:
+				$service_relevancy = "default";
+				break;
+			    case 2:
+				$service_relevancy = "primary";
+				break;
+			    case 3:
+				$service_relevancy = "info";
+				break;
+			    case 4:
+				$service_relevancy = "warning";
+				break;
+			    case 5:
+				$service_relevancy = "danger";
+				break;
+			}
+		    } else {
+			$service_relevancy = "default";
 		    }
 
 		    echo "<span class='badge badge-pill badge-".$service_relevancy."'>$service_port/$service_proto</span> ";
@@ -220,21 +218,7 @@ if(isset($_GET["id"])) {
 ?>
 	<tr>
 	    <td colspan=10>
-		<nav>
-		    <ul class="pagination justify-content-center">
-			<li class="page-item disabled">
-			    <a class="page-link" href="#" tabindex="-1">Previous</a>
-			</li>
-<?php
-			for($p=$page_num;$p > 5;$p++) {
-			    echo "<li class='page-item'><a class='page-link' href=''>".($p+1)."</a></li>";
-			}
-?>
-		        <li class="page-item">
-<?php			    echo "<a class='page-link' href='?p='>Next</a>"; ?>
-			</li>
-		    </ul>
-		</nav>
+		<?php getPagination($page_num,$total_rows,'/host',10); ?>
 	    </td>
 	</tr></tbody></table>
     </div>

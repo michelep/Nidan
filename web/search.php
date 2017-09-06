@@ -7,7 +7,7 @@ if(!$mySession->isLogged()) {
     exit();
 }
 
-$query = $_GET["q"];
+$query = sanitize($_GET["q"]);
 
 $pageTitle = "Search for '$query'";
 
@@ -17,28 +17,94 @@ include_once "common_sidebar.php";
 
 ?>
 <main class="col-sm-9 offset-sm-3 col-md-10 offset-md-2 pt-3" id="contentDiv">
-    <h2>Search results</h2>
-    <div class="table-responsive">
-	<table id="table"
-               data-toggle="table"
-               data-url="/ajax/?action=table_get_search_results&search_id="
-               data-height="100%"
-               data-side-pagination="server"
-               data-pagination="true"
-               data-page-list="[5, 10, 20, 50, 100, 200]"
-               data-search="true">
-            <thead><tr>
-		<th data-field="job">Job</th>
-		<th data-field="id" data-sortable="true">ID</th>
-		<th data-field="add_date" data-sortable="true">Added on</th>
-		<th data-field="next_check" data-sortable="true">Next check</th>
-		<th data-field="start_date" data-sortable="true">Start Date</th>
-		<th data-field="end_date" data-sortable="true">End Date</th>
-	    </tr></thead>
-	</table>
-    </div>
-</main>
+<?php
+    $result = doQuery("SELECT ID,IP,MAC,Vendor,Hostname,Note,isOnline FROM Hosts WHERE MATCH(Vendor,Hostname,Note) AGAINST('$query' IN NATURAL LANGUAGE MODE);");
+    if(mysqli_num_rows($result) > 0) {
+?>
+        <h2>Search results for '<?php echo $query;?>' in Hosts</h2>
+	<div class="table-responsive">
+	    <table class="table table-striped"><thead>
+		<tr>
+		    <th>State</th>
+		    <th>IP</th>
+		    <th>Hostname</th>
+		    <th>Note</th>
+		</tr>
+	    </thead><tbody>
+<?php
+        while($row = mysqli_fetch_array($result,MYSQLI_ASSOC)) {
+    	    $host_id = $row["ID"];
+	    $host_ip = $row["IP"];
+	    $host_mac = $row["MAC"];
+	    $host_vendor = stripslashes($row["Vendor"]);
+	    $host_name = stripslashes($row["Hostname"]);
+	    $host_note = stripslashes($row["Note"]);
 
+	    $host_status = "fa-times text-danger";
+	    if($row["isOnline"]) {
+	        $host_status = "fa-circle-o text-success";
+	    }
+	    
+	    echo "<tr>
+	        <td><i class='fa $host_status' aria-hidden='true'></i></td>
+	        <td><a href='/host?id=$host_id'>$host_ip</a></td>
+	        <td>$host_name</td>
+	        <td>$host_note</td>
+	    </tr>";
+	}
+?>
+	</tbody></table>
+    </div>
+<?php
+    }
+    $result = doQuery("SELECT hostId,Port,Proto,State,Banner FROM Services WHERE MATCH(Banner) AGAINST('$query' IN NATURAL LANGUAGE MODE) OR 'Port' LIKE '%$query%';");
+    if(mysqli_num_rows($result) > 0) {
+?>
+        <h2>Search results for '<?php echo $query;?>' in Services</h2>
+        <div class="table-responsive">
+    	    <table class="table table-striped"><thead>
+		<tr>
+		    <th>State</th>
+		    <th>Host</th>
+		    <th>Port/Proto</th>
+		    <th>State</th>
+		    <th>Banner</th>
+		</tr>
+	    </thead><tbody>
+<?php
+	while($row = mysqli_fetch_array($result,MYSQLI_ASSOC)) {
+	    $host = new Host($row["ID"]);
+	    $service_port = $row["Port"].'/'.$row["Proto"];
+	    $service_banner = stripslashes($row["Banner"]);
+
+	    switch($row["State"]) {
+	        case 'open':
+	    	    $service_status = "fa-circle-o text-success";
+		    break;
+		case 'closed':
+		    $service_status = "fa-times text-danger";
+		    break;
+		case 'filtered':
+		    $service_status = "fa-filter text-info";
+		    break;
+		default:
+		    $service_status = "fa-question-circle";
+		    break;
+	    }
+	    echo "<tr>
+	        <td><i class='fa $service_status' aria-hidden='true'></i></td>
+	        <td><a href='/host?id=$host->id'>$host->name</a></td>
+	        <td>$service_port</td>
+	        <td>$service_banner</td>
+	    </tr>";
+	}
+?>
+	</tbody></table>
+    </div>
+<?php
+    }
+?>
+</main>
 <?php 
 
 include "common_foot.php"; 

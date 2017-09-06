@@ -5,6 +5,7 @@
 import sys
 import nmap
 import time
+import socket
 from config import Config
 
 class Scanner:
@@ -75,15 +76,18 @@ class Scanner:
 
 	return scantime
 
-    def get_banner(self, IP, port):
+    def get_banner(self, ip, port):
 	try:
 	    s = socket.socket()
 	    s.settimeout(5.0)
-	    s.connect((IP,port))
+	    s.connect((ip,port))
 	    # Connection done !
-	    s.send("\r\n");
+	    # s.send("\r\n");
 	    banner = str(s.recv(1024))
     	    return banner
 	except socket.error as e:
 	    Config.log.debug('Banner error: %s' % (e))
+	    return None
+	except socket.timeout:
+	    Config.log.debug('Banner timeout')
 	    return None

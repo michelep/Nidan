@@ -1,4 +1,4 @@
-0.0.1pre2 -
+0.0.1pre2 - 5 Sep 2017
 * [Web Gui] Added pagination in Hosts page
 * [Web Gui] Nidan summary with cards in first page
 * [Web Gui] Search for hosts and services now work
