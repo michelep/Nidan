@@ -1,0 +1,9 @@
+0.0.1pre2 -
+* [Web Gui] Added pagination in Hosts page
+* [Web Gui] Nidan summary with cards in first page
+* [Web Gui] Search for hosts and services now work
+* [Agent] Basic banner grabbing now works. Needs more improvements, like retry on timeout and service detection: added in TODO list
+* [Agent] Other minor changes
+
+0.0.1pre1 - 4 Sep 2017
+* First public pre-release
