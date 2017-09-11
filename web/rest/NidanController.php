@@ -177,7 +177,7 @@ class NidanController
 					LOGWrite("REST::net_scan_compare::NO CHANGES",LOG_DEBUG);
 				    }
 				} else {
-				    LOGWrite("REST::net_scan_compare::FIRST TIME",LOG_DEBUG);
+				    LOGWrite("REST::net_scan_compare($job->id)::FIRST TIME::".var_export($old_net_scenario, true)."-".var_export($new_net_scenario, true)."",LOG_DEBUG);
 				}
 			    }
 			    // ...or, if it's an host scan, do the same: check for services changes
@@ -196,7 +196,7 @@ class NidanController
 					LOGWrite("REST::host_scan_compare::NO CHANGES",LOG_DEBUG);
 				    }
 				} else {
-				    LOGWrite("REST::host_scan_compare::FIRST TIME",LOG_DEBUG);
+				    LOGWrite("REST::host_scan_compare($job->id)::FIRST TIME::".var_export($old_host_scenario, true)."::".var_export($new_host_scenario, true)."",LOG_DEBUG);
 				}
 			    }
 

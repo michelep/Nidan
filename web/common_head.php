@@ -58,7 +58,7 @@ if($mySession->isLogged()) {
 		</li>
 	    </ul>
 	    <form class="form-inline mt-2 mt-md-0" action="/search" method="GET">
-		<input class="form-control mr-sm-2" type="search" name="q" placeholder="Search host/service" value="<?php if(isset($_GET["q"])) { echo $_GET["q"]; }?>">
+		<input class="form-control mr-sm-2 validate[required]" type="search" name="q" placeholder="Search host/service" value="<?php if(isset($_GET["q"])) { echo $_GET["q"]; }?>">
 		<button class="btn my-2 my-sm-0" type="submit">Search</button>
 	    </form>
 	</div>

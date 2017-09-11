@@ -3,8 +3,8 @@
 -- http://www.phpmyadmin.net
 --
 -- Host: localhost
--- Creato il: Set 01, 2017 alle 16:01
--- Versione del server: 5.7.19-0ubuntu0.16.04.1
+-- Creato il: Set 11, 2017 alle 09:58
+-- Versione del server: 10.0.31-MariaDB-0ubuntu0.16.04.2
 -- Versione PHP: 7.0.22-0ubuntu0.16.04.1
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
@@ -19,7 +19,7 @@ SET time_zone = "+00:00";
 --
 -- Database: `nidan`
 --
-CREATE DATABASE IF NOT EXISTS `nidan` DEFAULT CHARACTER SET latin1 COLLATE latin1_swedish_ci;
+CREATE DATABASE IF NOT EXISTS `nidan` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 USE `nidan`;
 
 -- --------------------------------------------------------
@@ -197,7 +197,9 @@ DROP TABLE IF EXISTS `Stats`;
 CREATE TABLE `Stats` (
   `addDate` datetime NOT NULL,
   `netId` smallint(6) NOT NULL,
-  `totalHosts` int(11) NOT NULL
+  `totalHosts` int(11) NOT NULL,
+  `totalServices` int(11) NOT NULL,
+  `scanTime` decimal(10,0) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 -- --------------------------------------------------------
@@ -243,7 +245,7 @@ CREATE TABLE `Users` (
 --
 
 INSERT INTO `Users` (`ID`, `userName`, `userPassword`, `userEmail`, `userAlias`, `addDate`, `lastLogin`) VALUES
-(1, 'admin@localhost', '*4ACFE3202A5FF5CF467898FC58AAB1D615029441', NULL, '', '2017-07-10 16:06:47', '2017-09-01 14:44:45');
+(1, 'admin@localhost', '*4ACFE3202A5FF5CF467898FC58AAB1D615029441', NULL, '', '2017-07-10 16:06:47', '2017-09-11 08:48:38');
 
 --
 -- Indici per le tabelle scaricate
@@ -260,6 +262,7 @@ ALTER TABLE `Agents`
 --
 ALTER TABLE `Hosts`
   ADD PRIMARY KEY (`ID`);
+ALTER TABLE `Hosts` ADD FULLTEXT KEY `Hostname` (`Hostname`,`Note`,`Vendor`);
 
 --
 -- Indici per le tabelle `JobsQueue`
@@ -278,6 +281,7 @@ ALTER TABLE `Networks`
 --
 ALTER TABLE `Services`
   ADD PRIMARY KEY (`ID`);
+ALTER TABLE `Services` ADD FULLTEXT KEY `Banner` (`Banner`);
 
 --
 -- Indici per le tabelle `SessionMessages`

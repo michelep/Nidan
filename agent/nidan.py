@@ -15,6 +15,9 @@ import time
 import schedule
 import jsonpickle
 
+import urllib3
+urllib3.disable_warnings()
+
 import ConfigParser
 
 from Nidan.nidan import *
@@ -66,7 +69,7 @@ if __name__ == '__main__':
 	    Config.server_url = arg
 
     if os.geteuid() != 0:
-	print "You are running nidan as non-privileged user: that's ok *but* remember i should use non-root scanning methods..."
+	print "You are running nidan as non-privileged user: that's ok *but* remember i should use non-root scanning methods and some info, like MAC, will be missing..."
 	Config.net_scan_args = '-sP -PE -PA21,23,80,3389'
 	Config.host_scan_args = ''
     else:

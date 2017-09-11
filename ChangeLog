@@ -1,3 +1,9 @@
+0.0.1pre3 - 11 Sep 2017
+* [Web Gui] Fix an issue in search result page
+* [Web Gui] Minor fixes
+* [Web Gui] Fixed a bug in net and host comparison
+* [Agent] Disabled invalid SSL Certificate warning
+
 0.0.1pre2 - 5 Sep 2017
 * [Web Gui] Added pagination in Hosts page
 * [Web Gui] Nidan summary with cards in first page

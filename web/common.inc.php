@@ -219,25 +219,37 @@ function getPagination($cur_page,$total_items,$base_url,$items_per_page=10) {
     }
 
     echo "<nav>
-	    <ul class='pagination justify-content-center'>
-		<li class='page-item ".($prev_page ? '':'disabled')."'>
-		    <a class='page-link' href='".($base_url.'?p='.$prev_page)."' tabindex='-1'>Previous</a>
-		</li>";
+	    <ul class='pagination justify-content-center'>";
+
     if(($cur_page - 3) > 0) {
-	$min = $num_pages-3;
+	$min = $cur_page-3;
     } else {
 	$min=1;
     }
     if(($cur_page + 3) > $num_pages) {
 	$max = $num_pages;
     } else {
-	$max=$num_pages;
+	$max = $cur_page+3;
+    }
+    echo "	<li class='page-item ".($prev_page ? '':'disabled')."'>
+		    <a class='page-link' href='".($base_url.'?p='.$prev_page)."' tabindex='-1'>Previous</a>
+		</li>";
+
+    if($min > 1) {
+	echo "	<li class='page-item'>
+		    <a class='page-link' href='".($base_url.'?p='.$prev_page)."'>...</a>
+		</li>";
     }
 
     for($p=$min;$p<=$max;$p++) {
 	echo "<li class='page-item ".(($p==$cur_page) ? 'active':'')."'>
 	    <a class='page-link'  href='".($base_url.'?p='.$p)."'>$p</a>
 	</li>";
+    }
+    if($p < $num_pages) {
+	echo "	<li class='page-item'>
+		    <a class='page-link' href='".($base_url.'?p='.$next_page)."'>...</a>
+		</li>";
     }
 
     echo "	<li class='page-item ".($next_page ? '':'disabled')."'>
@@ -558,10 +570,10 @@ class Job {
     }
 
     function getCache() {
-	$result = doQuery("SELECT Cache FROM JobsQueue WHERE Job='$this->id';");
+	$result = doQuery("SELECT Cache FROM JobsQueue WHERE ID='$this->id';");
 	if(mysqli_num_rows($result) > 0) {
 	    $row = mysqli_fetch_array($result,MYSQLI_ASSOC);
-	    if(!empty($row["Cache"])) {
+	    if(isset($row["Cache"])) {
 		return unserialize(stripslashes($row["Cache"]));
 	    } else {
 		return false;
