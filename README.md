@@ -10,8 +10,8 @@ specified networks, try grabbing TCP/UDP port banners. All data is saved into a 
 How Nidan works
 ---------------
 
-Nidan consists in a scanning agent, written in Python, and a GUI, written in PHP. Nidan scanning agent use MySQL/MariaDB DBMS, so you can install 
-it into a different server (ensure to setup correctly connection to the DBMS). In most case, both are on the same server.
+Nidan consists in a scanning agent, written in Python, and a web controller, written in PHP. Nidan scanning agent use a REST interface to fetch jobs from the controller,
+so you can install it into a different server (also behind a NAT !). In most case, both are on the same server.
 
 Nidan agent can be run also as non-privileged users, but scanning tecniques will be not accurate as running as root
 
