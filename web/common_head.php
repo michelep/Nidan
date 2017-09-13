@@ -1,5 +1,7 @@
 <?php
 
+define("DB_VERSION","0.0.1pre4");
+
 include_once "common.inc.php";
 
 ?>

@@ -28,6 +28,8 @@ include_once "common_sidebar.php";
             <thead><tr>
 		<th data-field="add_date" data-sortable="true">Date Time</th>
 		<th data-field="event" data-sortable="true">Event</th>
+		<th data-field="agent_id" data-sortable="true">Agent ID</th>
+		<th data-field="job_id" data-sortable="true">Job ID</th>
 		<th data-field="args" data-sortable="true">Args</th>
 	    </tr></thead>
 	</table>

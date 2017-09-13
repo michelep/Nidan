@@ -34,6 +34,13 @@ function isActive($page) {
 	<li class="nav-item">
 	    <a class="nav-link <?php isActive('/log'); ?>" href="/log">Event log</a>
 	</li>
+    </ul>
+    <ul class="nav nav-pills flex-column">
+	<li class="nav-item">
+	    <a class="nav-link <?php isActive('/config'); ?>" href="/config">Configuration</a>
+	</li>
+    </ul>
+    <ul class="nav nav-pills flex-column">
 	<li class="nav-item">
 	    <a class="nav-link" href="?action=logout">Logout</a>
 	</li>

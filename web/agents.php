@@ -50,7 +50,7 @@ if(isset($agent_id)) {
 	    </tr>
 	</thead><tbody>
 <?php
-	$result = doQuery("SELECT ID,Name,Description,IP,Hostname,isEnable,isOnline,addDate,lastSeen FROM Agents ORDER BY addDate;");
+	$result = doQuery("SELECT ID,Name,Description,IP,Hostname,isEnable,isOnline,addDate,TIMESTAMPDIFF(MINUTE,lastSeen,NOW()) AS lastSeen FROM Agents ORDER BY addDate;");
 	if(mysqli_num_rows($result) > 0) {
 	    while($row = mysqli_fetch_array($result,MYSQLI_ASSOC)) {
 		$agent_id = $row["ID"];
@@ -66,9 +66,12 @@ if(isset($agent_id)) {
 		    $agent_status = "fa-circle-o text-success";
 		}
 
-		$agent_lastseen = false;
-		if(!empty($row["lastSeen"])) {
-	    	    $agent_lastseen = new DateTime($row["lastSeen"]);
+		if($row["lastSeen"] > 60) {
+		    $agent_lastseen = $row["lastSeen"]." mins ago";
+		} else if($row["lastSeen"] > 0) {
+		    $agent_lastseen = $row["lastSeen"]." mins ago";
+		} else {
+		    $agent_lastseen = "now";
 		}
 
 		echo "<tr>
@@ -77,7 +80,7 @@ if(isset($agent_id)) {
 		    <td>$agent_description</td>
 		    <td>$agent_ip</td>
 		    <td>$agent_hostname</td>
-		    <td>".($agent_lastseen ? $agent_lastseen->format("H:i:s d:M:Y"): "Never")."</td>
+		    <td>$agent_lastseen</td>
 		    <td>".$agent_adddate->format("H:i:d d:M:Y")."</td>
 		    <td><a class='ajaxDialog' title='Edit agent' href='/ajax?action=agent_edit&id=$agent_id'><i class='fa fa-pencil-square' aria-hidden='true'></i></a></td>
 		</tr>";

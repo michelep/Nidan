@@ -3,7 +3,7 @@
 -- http://www.phpmyadmin.net
 --
 -- Host: localhost
--- Creato il: Set 11, 2017 alle 09:58
+-- Creato il: Set 13, 2017 alle 14:15
 -- Versione del server: 10.0.31-MariaDB-0ubuntu0.16.04.2
 -- Versione PHP: 7.0.22-0ubuntu0.16.04.1
 
@@ -45,6 +45,30 @@ CREATE TABLE `Agents` (
 -- --------------------------------------------------------
 
 --
+-- Struttura della tabella `Config`
+--
+
+DROP TABLE IF EXISTS `Config`;
+CREATE TABLE `Config` (
+  `Name` varchar(16) NOT NULL,
+  `Value` text
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+--
+-- Dump dei dati per la tabella `Config`
+--
+
+INSERT INTO `Config` (`Name`, `Value`) VALUES
+('db_version', '0.0.1pre4'),
+('mail_from_mail', 'nidan@zerozone.it'),
+('mail_from_name', 'Nidan'),
+('mail_server_host', 'localhost'),
+('mail_server_port', '25'),
+('mail_template', '<style>\r\np {\r\n    text-align: justify;\r\n}\r\n\r\ntable { border-collapse: collapse; }\r\nth { border-bottom: 1px solid #CCC; border-top: 1px solid #CCC; background-color: #EEE; padding: 0.5em 0.8em; text-align: center; font-weight:bold; }\r\ntd { border-bottom: 1px solid #CCC;padding: 0.2em 0.8em; }\r\ntd+td { border-left: 1px solid #CCC;text-align: center; }\r\n</style>\r\n<div style=\'padding: 5px;\'>\r\n%body%\r\n</div>\r\n<div style=\'width:100%; border-top: 1px solid #ccc; background-color: #eee; padding: 5px; text-align: center;\'>\r\n<b>Nidan</b>\r\n</div>');
+
+-- --------------------------------------------------------
+
+--
 -- Struttura della tabella `EventsLog`
 --
 
@@ -52,9 +76,9 @@ DROP TABLE IF EXISTS `EventsLog`;
 CREATE TABLE `EventsLog` (
   `addDate` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `agentId` int(11) NOT NULL,
+  `jobId` int(11) DEFAULT NULL,
   `Event` varchar(16) NOT NULL,
-  `Args` text NOT NULL,
-  `isNew` tinyint(1) NOT NULL
+  `Args` text
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 -- --------------------------------------------------------
@@ -211,7 +235,7 @@ CREATE TABLE `Stats` (
 DROP TABLE IF EXISTS `Triggers`;
 CREATE TABLE `Triggers` (
   `ID` int(11) NOT NULL,
-  `agentId` int(11) NOT NULL,
+  `agentId` int(11) DEFAULT NULL,
   `Event` varchar(16) NOT NULL,
   `Action` varchar(16) NOT NULL,
   `Priority` varchar(16) NOT NULL,
@@ -220,6 +244,7 @@ CREATE TABLE `Triggers` (
   `isEnable` tinyint(1) NOT NULL DEFAULT '0',
   `raisedCount` int(11) NOT NULL,
   `lastRaised` datetime DEFAULT NULL,
+  `lastProcessed` datetime DEFAULT NULL,
   `addDate` datetime NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
@@ -245,7 +270,7 @@ CREATE TABLE `Users` (
 --
 
 INSERT INTO `Users` (`ID`, `userName`, `userPassword`, `userEmail`, `userAlias`, `addDate`, `lastLogin`) VALUES
-(1, 'admin@localhost', '*4ACFE3202A5FF5CF467898FC58AAB1D615029441', NULL, '', '2017-07-10 16:06:47', '2017-09-11 08:48:38');
+(1, 'admin@localhost', '*4ACFE3202A5FF5CF467898FC58AAB1D615029441', NULL, '', '2017-07-10 16:06:47', '2017-09-13 11:24:08');
 
 --
 -- Indici per le tabelle scaricate
@@ -256,6 +281,12 @@ INSERT INTO `Users` (`ID`, `userName`, `userPassword`, `userEmail`, `userAlias`,
 --
 ALTER TABLE `Agents`
   ADD PRIMARY KEY (`ID`);
+
+--
+-- Indici per le tabelle `Config`
+--
+ALTER TABLE `Config`
+  ADD PRIMARY KEY (`Name`);
 
 --
 -- Indici per le tabelle `Hosts`

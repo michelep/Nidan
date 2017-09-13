@@ -12,6 +12,17 @@ include "common_head.php";
 include_once "common_sidebar.php";
 ?>
 <main class="col-sm-9 offset-sm-3 col-md-10 offset-md-2 pt-3" id="contentDiv">
+<?php
+// Check release
+$db_version = $myConfig->get("db_version");
+if(strncmp("DB_VERSION",$db_version) != 0) {
+    echo "<div class='alert alert-danger' role='alert'>
+	 <strong>Version mismatch !</strong> Your DB version doesn't match. Please run <a href='/install'>install script</a> to check and upgrade, if needed
+    </div>";
+}
+?>
+    <div class="row">
+
     <div class="row">
         <div class="col-lg-3 col-md-6">
             <div class="card card-inverse card-success">

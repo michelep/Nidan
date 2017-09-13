@@ -3,6 +3,7 @@
 * [Web Gui] Some improvements in trigger handling
 * [Web Gui] Implemented trigger deletion
 * [Web Gui] Updated phpmailer to latest release
+* [Web Gui] Some configuration moved to DB table
 * [Agent] Added support for dynamic scanning method, passing custom args on job
 
 0.0.1pre3 - 11 Sep 2017

@@ -1,7 +1,10 @@
 <?php
 
-require_once "class.phpmailer.php";
-require_once "class.smtp.php";
+use PHPMailer\PHPMailer\PHPMailer;
+
+require_once "phpmailer/PHPMailer.php";
+require_once "phpmailer/SMTP.php";
+require_once "phpmailer/Exception.php";
 
 require_once "config.inc.php";
 
@@ -14,10 +17,12 @@ if(empty($sessionId)) {
 
 $DB = OpenDB();
 if($DB==false) {
-    header('Location: /install/');
+    // If DB fails, jump to installer...
+    header('Location: /install');
 }
 
 $mySession = new Session($sessionId);
+$myConfig = new Config();
 
 if(isset($_GET["action"])) {
     $post_action = sanitize($_GET["action"]);
@@ -35,10 +40,10 @@ if(!empty($post_action)) {
 	    $row = mysqli_fetch_array($result,MYSQLI_ASSOC);
 
 	    $myUser = new User($row["ID"]);
-	    $mySession->userId = $myUser->ID;
+	    $mySession->userId = $myUser->id;
 
-	    doQuery("UPDATE Sessions SET userId='$myUser->ID' WHERE ID='$mySession->ID';");
-	    doQuery("UPDATE Users SET lastlogin=NOW() WHERE ID='$myUser->ID';");
+	    doQuery("UPDATE Sessions SET userId='$myUser->ID' WHERE ID='$mySession->id';");
+	    doQuery("UPDATE Users SET lastlogin=NOW() WHERE ID='$myUser->id';");
 
 	    $mySession->sendMessage("Welcome back ".$myUser->getName());
 
@@ -54,7 +59,7 @@ if(!empty($post_action)) {
 	$myUser = new User($mySession->userId);
 	if($myUser) {
 	    $mySession->userId = false;
-	    doQuery("UPDATE Sessions SET userId=NULL WHERE ID='$mySession->ID';");
+	    doQuery("UPDATE Sessions SET userId=NULL WHERE ID='$mySession->id';");
 
 	    $mySession->sendMessage("User ".$myUser->getName()." logged out");
 
@@ -122,6 +127,28 @@ if(!empty($post_action)) {
 	    // #TODO
 	}
 	//
+	// Config edit CB
+	//
+	if($post_action == "cb_config_edit") {
+	    $config_name = sanitize($_POST["config_name"]);
+	    if(strlen($config_name) > 0) {
+	        $config_value = sanitize($_POST["config_value"]);
+		$myConfig->set($config_name,$config_value);
+	        $mySession->sendMessage("Configuration field $config_name updated !");
+	    }
+	}
+	//
+	// Trigger remove CB
+	//
+	if($post_action == "cb_trigger_remove") {
+	    $trigger_id = intval(sanitize($_POST["trigger_id"]));
+	    if($trigger_id > 0) {
+		doQuery("DELETE FROM Triggers WHERE ID='$trigger_id';");
+		$mySession->sendMessage("Trigger $trigger_id deleted successfully !");
+		LOGWrite("Trigger $trigger_id deleted",LOG_DEBUG);
+	    }
+	}
+	//
 	// Trigger edit CB
 	//
 	if($post_action == "cb_trigger_edit") {
@@ -143,7 +170,7 @@ if(!empty($post_action)) {
 		$mySession->sendMessage("Trigger $trigger_event updated successfully !");
 		LOGWrite("Trigger $trigger_id updated",LOG_DEBUG);
 	    } else { // Add a trigger
-		doQuery("INSERT INTO Triggers(agentId,Event,Action,Priority,Args,userId,isEnable,addDate) VALUES ('$trigger_agentid','$trigger_event','$trigger_action','$trigger_priority','$trigger_args','$mySession->userId',$trigger_isenable,NOW());");
+		doQuery("INSERT INTO Triggers(agentId,Event,Action,Priority,Args,userId,isEnable,lastProcessed,addDate) VALUES ('$trigger_agentid','$trigger_event','$trigger_action','$trigger_priority','$trigger_args','$mySession->userId',$trigger_isenable,NOW(),NOW());");
 		$trigger_id = mysqli_insert_id($DB);
 		$mySession->sendMessage("New trigger $trigger_id on $trigger_event added successfully !");
 		LOGWrite("Trigger $trigger_id on $trigger_event added",LOG_DEBUG);
@@ -153,19 +180,24 @@ if(!empty($post_action)) {
 	// Account CB
 	//
 	if($post_action == "cb_account_edit") {
-	    $account_id = $_POST["user-id"];
-	    $account_email = $_POST["user-email"];
-	    $account_name =  $_POST["user-name"];
-	    $account_password = $_POST["user-password"];
-	    $account_password_val = $_POST["user-password-val"];
-	    $account_alias =  $_POST["user-alias"];
+	    $account_id = intval($_POST["user_id"]);
+	    $account_email = sanitize($_POST["user_email"]);
+	    $account_name = sanitize($_POST["user_name"]);
+	    $account_password = sanitize($_POST["user_password"]);
+	    $account_password_val = sanitize($_POST["user_password_val"]);
+	    $account_alias = sanitize($_POST["user_alias"]);
 
-	    if(strcmp($account_password,$account_password_val)==0) {
-	        doQuery("UPDATE Users SET userName='$account_name',userPassword='$account_password',userEmail='$account_email',userAlias='$account_alias' WHERE ID='$account_id';");
-		$mySession->sendMessage("Account $account_id updated successfully !");
-		LOGWrite("Account $account_it updated",LOG_DEBUG);
+	    if(strlen($account_password > 0)) {
+		if(strcmp($account_password,$account_password_val)==0) {
+		    doQuery("UPDATE Users SET userName='$account_name',userPassword='$account_password',userEmail='$account_email',userAlias='$account_alias' WHERE ID='$account_id';");
+		    $mySession->sendMessage("Account $account_id updated successfully !");
+		    LOGWrite("Account $account_it updated",LOG_DEBUG);
+		} else {
+		    $mySession->sendMessage("Password don't match: try again !","error");
+		}
 	    } else {
-		$mySession->sendMessage("Password don't match !","error");
+		doQuery("UPDATE Users SET userName='$account_name',userEmail='$account_email',userAlias='$account_alias' WHERE ID='$account_id';");
+		$mySession->sendMessage("Account $account_id updated successfully !");
 	    }
 	}
     }
@@ -175,7 +207,7 @@ function doQuery($query) {
     global $DB;
     $result = mysqli_query($DB,$query);
     if($result === false) {
-	LOGWrite("Error while executing query '$query': ".mysqli_error($DB),LOG_ERROR);
+	LOGWrite("Error while executing query '$query': ".mysqli_error($DB),'LOG_ERROR');
 	exit();
     }
     usleep(500);
@@ -186,7 +218,7 @@ function OpenDB() {
     global $CFG;
     $db = mysqli_connect($CFG["db_host"],$CFG["db_user"],$CFG["db_password"],$CFG["db_name"]);
     if($db == false) {
-	LOGWrite("Cannot connect to DB ".$CFG["db_name"]."@".$CFG["db_host"]." !",LOG_ERROR);
+	LOGWrite("Cannot connect to DB ".$CFG["db_name"]."@".$CFG["db_host"]." !",'LOG_ERROR');
 	return false;
     }
     return $db;
@@ -311,30 +343,33 @@ function sendMail($toEmail, $toName, $subject, $message) {
     $mail = new PHPMailer(true);
     $mail->IsSMTP(); 
     try {
-        $mail->Host       = $CFG["mailServerHost"]; 
-        $mail->Port       = $CFG["mailServerPort"]; 
+        $mail->Host       = $myConfig->get("mail_server_host"); 
+        $mail->Port       = $myConfig->get("mail_server_port"); 
         $mail->AddAddress($toEmail, $toName);
-        $mail->SetFrom($CFG["mailFromMail"], $CFG["mailFromName"]);
+        $mail->SetFrom($myConfig->get("mail_from_mail"), $myConfig->get("mail_from_name"));
 
 	$mail->Subject = $subject;
 
-	$mailBody = str_replace(array("%body%"),array($message),$CFG["mailTemplate"]);
+	$mailBody = str_replace(array("%body%","%toemail%","%toname%"),array($message,$toEmail,$toName),$myConfig->get("mail_template"));
 
 	$mail->MsgHTML($mailBody);
 	$mail->AltBody = $mail->html2text($mailBody,true);
 	$mail->Send();
+
+	LOGWrite("Sent mail with subject $subject to $toEmail ($toName)");
+
         return true;
     } catch (phpmailerException $e) {
-	LOGWrite("Error while sending e-mail with subject $subject to $toEmail ($toName): ".$e->errorMessage(),LOG_ERROR);
+	LOGWrite("Error while sending e-mail with subject $subject to $toEmail ($toName): ".$e->errorMessage(),'LOG_ERROR');
     } catch (Exception $e) {
-	LOGWrite("Error while sending e-mail with subject $subject to $toEmail ($toName): ".$e->errorMessage(),LOG_ERROR);
+	LOGWrite("Error while sending e-mail with subject $subject to $toEmail ($toName): ".$e->errorMessage(),'LOG_ERROR');
     }
     return false;
 }
 
 
 class Session {
-    var $ID;
+    var $id;
     var $userId=false;
     
     function __construct($ID) {
@@ -342,7 +377,7 @@ class Session {
 	doQuery("DELETE FROM Sessions WHERE HOUR(TIMEDIFF(NOW(),lastAction)) > 1;");
 	/* Procedi... */
 	doQuery("INSERT INTO Sessions (ID,IP) VALUES ('$ID','".getClientIP()."') ON DUPLICATE KEY UPDATE lastAction=NOW();");
-	$this->ID = $ID;
+	$this->id = $ID;
 	
 	$result = doQuery("SELECT userId FROM Sessions WHERE ID='$ID';");
 	if(mysqli_num_rows($result) > 0) {
@@ -359,7 +394,7 @@ class Session {
     function sendMessage($message, $type='information') {
 	global $DB;
 	/* Types: 'alert', 'information', 'error', 'warning', 'notification', 'success' */
-	doQuery("INSERT INTO SessionMessages (sessionId,Type,Message,addDate) VALUES ('$this->ID','$type','".mysqli_real_escape_string($DB,$message)."',NOW());");
+	doQuery("INSERT INTO SessionMessages (sessionId,Type,Message,addDate) VALUES ('$this->id','$type','".mysqli_real_escape_string($DB,$message)."',NOW());");
     }
 
     function isLogged() {
@@ -371,20 +406,38 @@ class Session {
     }
 }
 
-class User {
-    var $ID=false;
-    var $Name;
-    var $eMail;
-    var $loginETA;
-    var $Alias;
-
-    function __construct($ID) {
-	$result = doQuery("SELECT ID,userName,userAlias,DATEDIFF(NOW(),lastLogin) AS loginETA FROM Users WHERE ID='$ID';");
+class Config {
+    function get($name) {
+	$result = doQuery("SELECT Value FROM Config WHERE Name='$name';");
 	if(mysqli_num_rows($result) > 0) {
 	    $row = mysqli_fetch_array($result,MYSQLI_ASSOC);
-	    $this->ID = $row["ID"];
-	    $this->Name = stripslashes($row["userName"]);
-	    $this->Alias = stripslashes($row["userAlias"]);
+	    return stripslashes($row["Value"]);
+	} else {
+	    return false;
+	}
+    }
+    
+    function set($name, $value) {
+	global $DB;
+	doQuery("INSERT INTO Config (Name,Value) VALUES ('".mysqli_real_escape_string($DB,$name)."','".mysqli_real_escape_string($DB,$value)."') ON DUPLICATE KEY UPDATE Value=''".mysqli_real_escape_string($DB,$value)."';");
+    }
+}
+
+class User {
+    var $id=false;
+    var $name;
+    var $eMail;
+    var $loginETA;
+    var $alias;
+
+    function __construct($ID) {
+	$result = doQuery("SELECT ID,userName,userAlias,userEmail,DATEDIFF(NOW(),lastLogin) AS loginETA FROM Users WHERE ID='$ID';");
+	if(mysqli_num_rows($result) > 0) {
+	    $row = mysqli_fetch_array($result,MYSQLI_ASSOC);
+	    $this->id = $row["ID"];
+	    $this->name = stripslashes($row["userName"]);
+	    $this->eMail = stripslashes($row["userEmail"]);
+	    $this->alias = stripslashes($row["userAlias"]);
 	    $this->loginETA = $row["loginETA"];
 	}
     }
@@ -634,11 +687,15 @@ class Agent {
 //
 // When something happens, this function weill be called...
 //
-function raiseEvent($agent_id,$event,$args) {
-    LOGWrite("Event '$event' raised by agent $agent_id");
+function raiseEvent($agent_id,$job_id,$event,$args=NULL) {
+    LOGWrite("Event '$event' raised by agent $agent_id for job $job_id");
 
     // Add event to queue...
-    doQuery("INSERT INTO EventsLog(addDate,agentId,Event,Args,isNew) VALUES (NOW(),'$agent_id','$event','".json_encode($args)."',1);");
+    if(empty($args)) {
+	doQuery("INSERT INTO EventsLog(addDate,agentId,jobId,Event,Args) VALUES (NOW(),'$agent_id','$job_id','$event',NULL);");
+    } else {
+	doQuery("INSERT INTO EventsLog(addDate,agentId,jobId,Event,Args) VALUES (NOW(),'$agent_id','$job_id','$event','".json_encode($args)."');");
+    }
 }
 
 $tcp_services = array(

@@ -14,7 +14,7 @@ class Scanner:
     
     def net_scan(self, job_id, args):
 	net_addr = args['net_addr']
-	scan_method = len(args['scan_method']) > 0 and args['scan_method'] or Config.net_scan_args
+	scan_method = len(args['scan_method']) and args['scan_method'] or Config.net_scan_args
 	
 	Config.log.debug('Start scanning of network %s with %s' % (net_addr,scan_method))
 
@@ -45,7 +45,7 @@ class Scanner:
     def host_scan(self, job_id, args):
 
 	host_addr = args['host_addr']
-	scan_method = len(args['scan_method']) > 0 and args['scan_method'] or Config.host_scan_args
+	scan_method = len(args['scan_method']) and args['scan_method'] or Config.host_scan_args
 
 	Config.log.debug('Start scanning of host %s with %s' % (host_addr,scan_method))
 

@@ -19,7 +19,7 @@ if(isset($_GET["id"])) {
     	$net_adddate = new DateTime($row["addDate"]);
     	$net_lastcheck = new DateTime($row["lastCheck"]);
 
-	$pageTitle = "Details for $net_address ($net_desc)";
+	$pageTitle = "$net_desc ($net_address)";
     }
 } else {
     header("Location: /");
@@ -33,7 +33,7 @@ include_once "common_sidebar.php";
 
 ?>
 <main class="col-sm-9 offset-sm-3 col-md-10 offset-md-2 pt-3" id="contentDiv">
-    <h2>Details for <?php echo "$net_address ($net_desc)"; ?></h2>
+    <h2>Details for <?php echo "$net_desc ($net_address)"; ?></h2>
     <div class="row">
 	<canvas id="netChart" width="800" height="400"></canvas>
     </div>
@@ -47,7 +47,7 @@ include_once "common_sidebar.php";
     </div>
 </main>
 
-<?php 
+<?php
 
 include "common_foot.php"; 
 

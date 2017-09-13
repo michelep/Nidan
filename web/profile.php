@@ -23,26 +23,27 @@ $myUser = new User($mySession->userId);
 	</div>
 	<form method="POST">
 	    <input type="hidden" name="action" value="cb_account_edit">
+	    <input type="hidden" name="user_id" value="<?php echo $mySession->userId; ?>">
 	    <div class="panel-body">
 		<div class="form-group">
 		    <label for="user-email">E-Mail</label>
-		    <input type="text" class="form-control" placeholder="E-mail address" id="user-email" aria-describedby="user-email" name="email" value="<?php echo $myUser->eMail; ?>">
+		    <input type="text" class="form-control" placeholder="E-mail address" id="user-email" aria-describedby="user-email" name="user_email" value="<?php echo $myUser->eMail; ?>">
 	        </div>
 		<div class="form-group">
 		    <label for="user-name">Username</label>
-		    <input type="text" class="form-control" placeholder="Username" id="user-name" aria-describedby="user-name" name="username" value="<?php echo $myUser->Name; ?>">
+		    <input type="text" class="form-control" placeholder="Username" id="user-name" aria-describedby="user-name" name="user_name" value="<?php echo $myUser->name; ?>">
 	        </div>
 		<div class="form-group">
 		    <label for="user-password">Password</label>
-		    <input type="password" class="form-control" placeholder="Password" id="user-password" aria-describedby="user-password" name="password">
+		    <input type="password" class="form-control" placeholder="Password" id="user-password" aria-describedby="user-password" name="user_password">
 		</div>
 		<div class="form-group">
 		    <label for="user-password-val">Validate</label>
-		    <input type="password" class="form-control" placeholder="Type again your new password or left blank to skip" id="user-password-val" aria-describedby="user-password-val" name="password-val">
+		    <input type="password" class="form-control" placeholder="Type again your new password or left blank to skip" id="user-password-val" aria-describedby="user-password-val" name="user_password_val">
 		</div>
 		<div class="form-group">
 		    <label for="user-alias">Alias</label>
-		    <input type="text" class="form-control" placeholder="Alias" id="user-alias" aria-describedby="user-alias" name="alias" value="<?php echo $myUser->Alias; ?>">
+		    <input type="text" class="form-control" placeholder="Alias" id="user-alias" aria-describedby="user-alias" name="user_alias" value="<?php echo $myUser->alias; ?>">
 		</div>
 		<button type="submit" class="btn btn-default">Save</button>
 	    </div>

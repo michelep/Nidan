@@ -182,11 +182,14 @@ if($mySession->isLogged()) {
 	    <select data-placeholder='Choose event' class='form-control' id='trigger_event' name='trigger_event'>
 		<option value='new_host' ".isSelected('new_host',$trigger_event).">New host detected</option>
 		<option value='new_service' ".isSelected('new_service',$trigger_event).">New service detected</option>
+		<option value='net_change' ".isSelected('net_change',$trigger_event).">Net change</option>
 		<option value='host_change' ".isSelected('host_change',$trigger_event).">Host changed</option>
 		<option value='host_offline' ".isSelected('host_offline',$trigger_event).">Host offline</option>
 		<option value='host_online' ".isSelected('host_online',$trigger_event).">Host online</option>
+		<option value='service_change' ".isSelected('service_change',$trigger_event).">Service change</option>
 		<option value='service_down' ".isSelected('service_down',$trigger_event).">Service down</option>
 		<option value='service_up' ".isSelected('service_up',$trigger_event).">Service up</option>
+		<option value='agent_offline' ".isSelected('agent_offline',$trigger_event).">Agent offline</option>
 		<option value='agent_start' ".isSelected('agent_start',$trigger_event).">Agent start</option>
 		<option value='agent_stop' ".isSelected('agent_stop',$trigger_event).">Agent stop</option>
 		<option value='job_start' ".isSelected('job_start',$trigger_event).">Job start</option>
@@ -216,6 +219,42 @@ if($mySession->isLogged()) {
 	    <p class='help-block'>If checked, this trigger is enable</p>
 	</div></form>";
     }
+    /* ===========================================
+    Remove TRIGGER
+    =========================================== */
+    if($ajax_action == "trigger_remove") {
+	$trigger_id = intval($_GET["id"]);
+	if($trigger_id > 0) {
+	    echo "<form method='POST' id='ajaxDialog'>
+	    <input type='hidden' name='action' value='cb_trigger_remove'>
+	    <input type='hidden' name='trigger_id' value='$trigger_id'>
+	    <div class='form-group'>
+		<h2>Are your sure ?</h2>
+		<p class='help-block'>Do you really want to remove this trigger ? This operation cannot be undone.</p>
+	    </div>
+	    </form>";
+	}
+    }
+
+    /* ===========================================
+    Edit CONFIG
+    =========================================== */
+    if($ajax_action == "config_edit") {
+	$config_name = sanitize($_GET["name"]);
+	if(strlen($config_name) > 0) {
+	    $config_value = $myConfig->get($config_name);
+	    echo "<form method='POST' id='ajaxDialog'>
+	    <input type='hidden' name='action' value='cb_config_edit'>
+	    <input type='hidden' name='config_name' value='$config_name'>
+	    <div class='form-group'>
+		<span class='form-group-addon'>Field name: <b>$config_name</b>
+	    </div><div class='form-group'>
+		<span class='form-group-addon'>Field value<span>
+		<textarea id='config_value' name='config_value' class='form-control w-100'>".htmlspecialchars($config_value)."</textarea>
+	    </div></form>";
+	}
+    }
+
     /* ===========================================
     TABLES JSON Data
     =========================================== */
@@ -272,16 +311,18 @@ if($mySession->isLogged()) {
 	$offset = intval($_GET["offset"]);
 	$limit = intval($_GET["limit"]);
 
-	$result = doQuery("SELECT addDate,Event,Args FROM EventsLog ORDER BY addDate $order_by LIMIT $limit OFFSET $offset;");
+	$result = doQuery("SELECT addDate,agentId,jobId,Event,Args FROM EventsLog ORDER BY addDate $order_by LIMIT $limit OFFSET $offset;");
 	if(mysqli_num_rows($result) > 0) {
 	    $ret_array = array("total" => $total_rows);
 
 	    while($row = mysqli_fetch_array($result,MYSQLI_ASSOC)) {
     		$log_adddate = new DateTime($row["addDate"]);
+		$log_agentid = $row["agentId"];
+		$log_jobid = $row["jobId"];
 		$log_event = stripslashes($row["Event"]);
 		$log_args = $row["Args"];
 
-		$ret_array["rows"][] = array("add_date" => $log_adddate->format("H:i:s d-M-Y"),"event" => $log_event,"args" => $log_args);
+		$ret_array["rows"][] = array("add_date" => $log_adddate->format("H:i:s d-M-Y"),"event" => $log_event,"agent_id" => $log_agentid,"job_id" => $log_jobid, "args" => $log_args);
 	    }
 
 	    header('Content-Type: application/json');

@@ -24,7 +24,7 @@ class NidanController
 	if(mysqli_num_rows($result) > 0) {
 	    $row = mysqli_fetch_array($result,MYSQLI_ASSOC);
 	    $this->agent_id = $row["ID"];
-	    doQuery("UPDATE Agents SET lastSeen=NOW() WHERE ID='$this->agent_id';");
+	    doQuery("UPDATE Agents SET lastSeen=NOW(),isOnline=1 WHERE ID='$this->agent_id';");
 	    return true;
 	}
 	return false;
@@ -50,7 +50,7 @@ class NidanController
 	    doQuery("UPDATE JobsQueue SET startDate=NULL WHERE agentId='$this->agent_id' AND endDate IS NULL");
 	
 	    $args = array('hostname' => $hostname, 'ip' => getClientIP());
-	    raiseEvent($this->agent_id,"agent_start",$args);
+	    raiseEvent($this->agent_id,NULL,"agent_start",$args);
 
 	    return array("success" => "OK");
 	} else {
@@ -76,7 +76,7 @@ class NidanController
 	    doQuery("UPDATE Agents SET isOnline=0 WHERE ID='$this->agent_id';");
 
 	    $args = array('reason' => $reason, 'ip' => getClientIP());
-	    raiseEvent($this->agent_id,"agent_stop",$args);
+	    raiseEvent($this->agent_id,NULL,"agent_stop",$args);
 
 	    return array("success" => "OK");
 	} else {
@@ -118,7 +118,7 @@ class NidanController
 			$host = new Host($job->itemId);
 			$job->setCache($host->getServices());
 		    }
-		    raiseEvent($this->agent_id,"job_start",array("id" => $job->id));
+		    raiseEvent($this->agent_id,$job->id,"job_start");
 
 		    return array("success" => "$job_id", "job_id"=> $job->id, "job_type" => $job->job, "job_args" => $job->args);
 	        } else {
@@ -154,7 +154,7 @@ class NidanController
 //		    	REST::job_set(2087)::array (#012  'status' => 'error',#012  'reason' => '<traceback object at 0x7f7d8dcc5a28>',#012)
 			case 'error':
 			    $reason = sanitize($_POST["reason"]);
-			    raiseEvent($this->agent_id,"job_error",array("id" => $id, "reason" => $reason));
+			    raiseEvent($this->agent_id,$job->id,"job_error",array("reason" => $reason));
 			    break;
 		        case 'complete':
 // 			REST::job_set(1034)::array (#012  'status' => 'complete',#012  'scantime' => '0.521373987198',#012)
@@ -172,7 +172,8 @@ class NidanController
 				if(($old_net_scenario) && ($new_net_scenario)) {
 				    $arr_res = array_diff_assoc($new_net_scenario,$old_net_scenario);
 				    if(count($arr_res) > 0) {
-					LOGWrite("REST::net_scan_compare::".var_export($_POST, true),LOG_DEBUG);
+					LOGWrite("REST::net_scan_compare::".var_export($arr_res, true),LOG_DEBUG);
+					raiseEvent($this->agent_id,$job->id,"net_change",array("changes" => $arr_res));
 				    } else {
 					LOGWrite("REST::net_scan_compare::NO CHANGES",LOG_DEBUG);
 				    }
@@ -191,7 +192,8 @@ class NidanController
 				if(($old_host_scenario) && ($new_host_scenario)) {
 				    $arr_res = array_diff_assoc($new_host_scenario,$old_host_scenario);
 				    if(count($arr_res) > 0) {
-					LOGWrite("REST::host_scan_compare::".var_export($_POST, true),LOG_DEBUG);
+					LOGWrite("REST::host_scan_compare::".var_export($arr_res, true),LOG_DEBUG);
+					raiseEvent($this->agent_id,$job->id,"host_change",array("changes" => $arr_res));
 				    } else {
 					LOGWrite("REST::host_scan_compare::NO CHANGES",LOG_DEBUG);
 				    }
@@ -201,7 +203,7 @@ class NidanController
 			    }
 
 			    // and finally, raise event !
-			    raiseEvent($this->agent_id,"job_end",array("id" => $id));
+			    raiseEvent($this->agent_id,$job->id,"job_end");
 			    break;
 			default:
 			    break;
@@ -264,7 +266,7 @@ class NidanController
 			$arr_res = array_diff_assoc($new_host,$old_host);
 			if(count($arr_res) > 0) {
 			    //Something has changed...so raise event !
-			    raiseEvent($this->agent_id,"host_change",$arr_res);
+			    raiseEvent($this->agent_id,$job_id,"host_change",$arr_res);
 			}
 
 			return array("success" => "OK");
@@ -275,7 +277,7 @@ class NidanController
 			if($host_id > 0) {
 			    // Prepare to raise event...
 			    $args = array('id' => $host_id, 'hostname' => $hostname, 'ip' => $ip);
-			    raiseEvent($this->agent_id,"new_host",$args);
+			    raiseEvent($this->agent_id,$job_id,"new_host",$args);
 			}
 			return array("success" => "OK");
 		    }
@@ -327,7 +329,7 @@ class NidanController
 			$arr_res = array_diff_assoc($new_service,$old_service);
 			if(count($arr_res) > 0) {
 			    //Something has changed...so raise event !
-			    raiseEvent($this->agent_id,"service_change",$arr_res);
+			    raiseEvent($this->agent_id,$job_id,"service_change",$arr_res);
 			}
 
 			return array("success" => "OK");
@@ -339,7 +341,7 @@ class NidanController
 			if($service_id > 0) {
 			    // Prepare to raise event..
 			    $args = array('id' => $service_id, 'port' => $port, 'proto' => $proto, 'state' => $state);
-			    raiseEvent($this->agent_id,"new_service",$args);
+			    raiseEvent($this->agent_id,$job_id,"new_service",$args);
 			}
 
 			return array("success" => "OK");
