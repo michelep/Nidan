@@ -14,13 +14,14 @@ class Scanner:
     
     def net_scan(self, job_id, args):
 	net_addr = args['net_addr']
+	scan_method = len(args['scan_method']) > 0 and args['scan_method'] or Config.net_scan_args
 	
-	Config.log.debug('Start scanning of network %s' % (net_addr))
+	Config.log.debug('Start scanning of network %s with %s' % (net_addr,scan_method))
 
 	starttime = time.time();
 
 	nm = nmap.PortScanner() # instantiate nmap.PortScanner object
-	nm.scan(hosts=net_addr, arguments=Config.net_scan_args)
+	nm.scan(hosts=net_addr, arguments=scan_method)
 
 	for host_ip in nm.all_hosts():
 	    Config.log.debug('Host %s (%s) is %s' % (host_ip, nm[host_ip].hostname(), nm[host_ip].state()))
@@ -44,13 +45,14 @@ class Scanner:
     def host_scan(self, job_id, args):
 
 	host_addr = args['host_addr']
+	scan_method = len(args['scan_method']) > 0 and args['scan_method'] or Config.host_scan_args
 
-	Config.log.debug('Start scanning of host %s' % (host_addr))
+	Config.log.debug('Start scanning of host %s with %s' % (host_addr,scan_method))
 
 	starttime = time.time();
 
 	nm = nmap.PortScanner() # instantiate nmap.PortScanner object
-	nm.scan(hosts=host_addr, arguments=Config.host_scan_args) # scan host
+	nm.scan(hosts=host_addr, arguments=scan_method) # scan host
 
 	for host_ip in nm.all_hosts():
 	    for proto in nm[host_ip].all_protocols():

@@ -1,3 +1,10 @@
+0.0.1pre4 - 
+* [Web Gui] Timeout check for agents and new trigger 'agent_offline'
+* [Web Gui] Some improvements in trigger handling
+* [Web Gui] Implemented trigger deletion
+* [Web Gui] Updated phpmailer to latest release
+* [Agent] Added support for dynamic scanning method, passing custom args on job
+
 0.0.1pre3 - 11 Sep 2017
 * [Web Gui] Fix an issue in search result page
 * [Web Gui] Minor fixes
