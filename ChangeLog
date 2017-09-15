@@ -1,4 +1,6 @@
-0.0.1pre4 - 
+0.0.1pre5 -
+
+0.0.1pre4 -15 Sep 2017
 * [Web Gui] Timeout check for agents and new trigger 'agent_offline'
 * [Web Gui] Some improvements in trigger handling
 * [Web Gui] Implemented trigger deletion
