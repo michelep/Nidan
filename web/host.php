@@ -206,7 +206,7 @@ if(isset($_GET["id"])) {
 		}
 	    }
 	    echo "</td><td>
-		    ".($host_lastcheck ? $host_lastcheck." min(s) agoo" : "'ll start soon...")."
+		    ".($host_lastcheck ? getHumanETA($host_lastcheck) : "'ll start soon...")."
 		</td><td>
 		    <a class='nav-link ajaxCall' title='Refresh' href='/ajax?action=refreshHost&id=$host_id'><i class='fa fa-refresh' aria-hidden='true'></i></a>
 		</td>

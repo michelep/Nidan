@@ -41,10 +41,12 @@ if(mysqli_num_rows($result) > 0) {
 	    <td>$trigger_action</td>
 	    <td>$trigger_args</td>
 	    <td>$trigger_raised</td>
-	    <td>
-		<a class='btn btn-secondary ajaxDialog' href='/ajax?action=trigger_edit&id=$trigger_id' title='Edit trigger'><i class='fa fa-pencil' aria-hidden='true'></i></a>
-		<a class='btn btn-secondary ajaxDialog' href='/ajax?action=trigger_remove&id=$trigger_id' title='Remove trigger'><i class='fa fa-times text-danger' aria-hidden='true'></i></a>
-	    </td>
+	    <td>";
+	if($myUser->getACL('manageTriggers')) {
+	    echo "<a class='btn btn-secondary ajaxDialog' href='/ajax?action=trigger_edit&id=$trigger_id' title='Edit trigger'><i class='fa fa-pencil' aria-hidden='true'></i></a>
+		<a class='btn btn-secondary ajaxDialog' href='/ajax?action=trigger_remove&id=$trigger_id' title='Remove trigger'><i class='fa fa-times text-danger' aria-hidden='true'></i></a>";
+	}
+	echo "    </td>
 	</tr>";
     }
 } else {
@@ -54,9 +56,15 @@ if(mysqli_num_rows($result) > 0) {
 ?>
 	</tbody></table>
     </div>
+<?php
+if($myUser->getACL('manageTriggers')) {
+?>
     <div class="btn-group" role="group" aria-label="Trigger actions">
 	<a class="btn btn-secondary ajaxDialog" href="/ajax?action=trigger_edit" title="Add new trigger"><i class="fa fa-plus-circle" aria-hidden="true"></i> Add new trigger</a>
     </div>
+<?php
+}
+?>
 </main>
 
 <?php 

@@ -88,6 +88,11 @@ If agent raise an exception with this error: "Unexpected error: (<class 'nmap.nm
 
 Join our public ML [nidan-users-ml](https://groups.google.com/forum/#!forum/nidan-users-ml "Nidan users ML") to help and receive support from users and developers
 
+## Want to support Nidan developement ? Get a shirt !
+
+Developing Nidan costs time and money. Please support us buying a [Nidan t-shirts](https://shop.spreadshirt.it/Nidan/) or [donate via PayPal](https://PayPal.Me/MichelePinassi)
+
+
 ## Author
 
 Nidan was written by Michele <o-zone@zerozone.it> Pinassi

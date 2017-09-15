@@ -3,7 +3,7 @@
 -- http://www.phpmyadmin.net
 --
 -- Host: localhost
--- Creato il: Set 13, 2017 alle 14:15
+-- Creato il: Set 15, 2017 alle 14:53
 -- Versione del server: 10.0.31-MariaDB-0ubuntu0.16.04.2
 -- Versione PHP: 7.0.22-0ubuntu0.16.04.1
 
@@ -59,8 +59,8 @@ CREATE TABLE `Config` (
 --
 
 INSERT INTO `Config` (`Name`, `Value`) VALUES
-('db_version', '0.0.1pre4'),
-('mail_from_mail', 'nidan@zerozone.it'),
+('db_version', '0.0.1pre5'),
+('mail_from_mail', 'nidan@localhost'),
 ('mail_from_name', 'Nidan'),
 ('mail_server_host', 'localhost'),
 ('mail_server_port', '25'),
@@ -257,10 +257,11 @@ CREATE TABLE `Triggers` (
 DROP TABLE IF EXISTS `Users`;
 CREATE TABLE `Users` (
   `ID` int(11) NOT NULL,
-  `userName` varchar(32) NOT NULL,
-  `userPassword` varchar(64) NOT NULL,
-  `userEmail` varchar(64) DEFAULT NULL,
-  `userAlias` varchar(32) NOT NULL,
+  `Name` varchar(32) NOT NULL,
+  `Password` varchar(64) NOT NULL,
+  `eMail` varchar(64) DEFAULT NULL,
+  `Alias` varchar(32) NOT NULL,
+  `ACL` text NOT NULL,
   `addDate` datetime NOT NULL,
   `lastLogin` datetime DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
@@ -269,8 +270,8 @@ CREATE TABLE `Users` (
 -- Dump dei dati per la tabella `Users`
 --
 
-INSERT INTO `Users` (`ID`, `userName`, `userPassword`, `userEmail`, `userAlias`, `addDate`, `lastLogin`) VALUES
-(1, 'admin@localhost', '*4ACFE3202A5FF5CF467898FC58AAB1D615029441', NULL, '', '2017-07-10 16:06:47', '2017-09-13 11:24:08');
+INSERT INTO `Users` (`ID`, `Name`, `Password`, `eMail`, `Alias`, `ACL`, `addDate`, `lastLogin`) VALUES
+(1, 'admin@localhost', '*4ACFE3202A5FF5CF467898FC58AAB1D615029441', 'o-zone@zerozone.it', '', 'a:6:{s:8:"canLogin";b:1;s:11:"manageUsers";b:1;s:12:"manageSystem";b:1;s:14:"manageNetworks";b:1;s:12:"manageAgents";b:1;s:14:"manageTriggers";b:1;}', '2017-07-10 16:06:47', '2017-09-15 08:40:31');
 
 --
 -- Indici per le tabelle scaricate

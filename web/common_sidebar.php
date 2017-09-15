@@ -36,9 +36,22 @@ function isActive($page) {
 	</li>
     </ul>
     <ul class="nav nav-pills flex-column">
+<?php
+if($myUser->getACL('manageSystem')) {
+?>
 	<li class="nav-item">
 	    <a class="nav-link <?php isActive('/config'); ?>" href="/config">Configuration</a>
 	</li>
+<?php
+}
+if($myUser->getACL('manageUsers')) {
+?>
+	<li class="nav-item">
+	    <a class="nav-link <?php isActive('/users'); ?>" href="/users">Users</a>
+	</li>
+<?php
+}
+?>
     </ul>
     <ul class="nav nav-pills flex-column">
 	<li class="nav-item">

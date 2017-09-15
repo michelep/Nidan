@@ -121,18 +121,21 @@ if($mySession->isLogged()) {
 	    }
 	}
     }
+
     /* ===========================================
     Refresh NETWORK
     =========================================== */
     if($ajax_action == "network_refresh") {
 	// TODO
     }
+
     /* ===========================================
     Refresh HOST
     =========================================== */
     if($ajax_action == "host_refresh") {
 	// TODO
     }
+
     /* ===========================================
     Clean JOB queue - Remove old complete jobs
     =========================================== */
@@ -140,6 +143,87 @@ if($mySession->isLogged()) {
 	doQuery("DELETE FROM JobsQueue WHERE startDate IS NOT NULL AND endDate IS NOT NULL;");
 	echo "Completed jobs cleared successfully !";
     }
+
+    /* ===========================================
+    Toggle user ACL
+    =========================================== */
+    if($ajax_action == "acl_toggle") {
+	$acl = sanitize($_GET["acl"]);
+	if($myUser->getACL('manageUsers')) {
+	    if(array_key_exists($acl,$CFG["defaultUserAcl"])) {
+		if($myUser->getACL($acl)) {
+		    $myUser->setACL($acl, false);
+		    echo "ACL disabled";
+		} else {
+		    $myUser->setACL($acl, true);
+		    echo "ACL enabled";
+		}
+	    }
+	}
+    }
+
+    /* ===========================================
+    Remove USER
+    =========================================== */
+    if($ajax_action == "user_remove") {
+	$user_id = intval($_GET["id"]);
+	if($myUser->getACL('manageUsers')) {
+	    if($user_id > 0) {
+		$tmpUser = new User($user_id);
+		echo "<form method='POST' id='ajaxDialog'>
+		<input type='hidden' name='action' value='cb_user_remove'>
+		<input type='hidden' name='user_id' value='$user_id'>
+		<div class='form-group'>
+		    <h2>Are your sure ?</h2>
+		    <p class='help-block'>Do you really want to remove user $tmpUser->name ? This operation cannot be undone.</p>
+		</div>
+	        </form>";
+	    }
+	}
+    }
+
+    /* ===========================================
+    Add or edit USER
+    =========================================== */
+    if($ajax_action == "user_edit") {
+	if($myUser->getACL('manageUsers')) {
+	    if(isset($_GET["id"])) {
+		$user_id = intval(sanitize($_GET["id"]));
+		$tmpUser = new User($user_id);
+	    }
+	    echo "<form method='POST' id='ajaxDialog'>
+	    <input type='hidden' name='action' value='cb_user_edit'>";
+	    if(isset($user_id)) {
+		echo "<input type='hidden' name='user_id' value='$user_id'>";
+	    }
+	    echo "<div class='form-group'>
+		<span class='form-group-addon'>User name:</span>
+		<input type='text' id='user_name' name='user_name' class='form-control w-100 validate[required]' value='$tmpUser->name'>
+		<p class='help-block'>Choose an unique username for this account</p>
+	    </div><div class='form-group'>
+		<span class='form-group-addon'>eMail address:</span>
+		<input type='text' id='user_name' name='user_email' class='form-control w-100 validate[required]' value='$tmpUser->eMail'>
+		<p class='help-block'>Account e-mail address, to be used for notifications and password</p>
+	    </div><div class='form-group'>
+		<span class='form-group-addon'>User alias:</span>
+		<input type='text' id='user_alias' name='user_alias' class='form-control w-100' value='$tmpUser->alias'>
+		<p class='help-block'>You can set an alias for this user</p>
+	    </div><div class='form-group'>
+		<span class='form-group-addon'>User rights</span>
+		<div class='btn-group' data-toggle='buttons'>";
+	    foreach(array_keys($CFG["defaultUserAcl"]) as $ACL) {
+		echo "<label class='btn btn-success'>
+		    <input name='acl_$ACL' type='checkbox' ".(($tmpUser->getACL($ACL)) ? "checked":"")." autocomplete='off'> $ACL
+		</label>";
+	    }
+	    echo "</div>
+	    </div><div class='form-group'>
+		<input type='checkbox' name='reset_password' ".isChecked(!$user_id)."> Reset and send new password
+	        <p class='help-block'>If checked, password will be reset and sent via mail to the user</p>
+	    </form>";
+	}
+    }
+
     /* ===========================================
     Add or edit TRIGGER
     =========================================== */
@@ -333,4 +417,3 @@ if($mySession->isLogged()) {
 }
 
 ?>
-    

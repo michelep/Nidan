@@ -45,6 +45,20 @@ $myUser = new User($mySession->userId);
 		    <label for="user-alias">Alias</label>
 		    <input type="text" class="form-control" placeholder="Alias" id="user-alias" aria-describedby="user-alias" name="user_alias" value="<?php echo $myUser->alias; ?>">
 		</div>
+		<div class="form-group">
+		    <label for="user-acl">User ACLs</label>
+		    <div class="row">
+<?php
+		foreach(array_keys($CFG["defaultUserAcl"]) as $ACL) {
+		    if($myUser->ACL[$ACL] === true) {
+			echo "<a class='btn btn-success ajaxCall' id='acl_$ACL' href='/ajax?action=acl_toggle&acl=$ACL'><i class='fa fa-check-square-o' aria-hidden='true'></i> $ACL </a>&nbsp;";
+		    } else {
+			echo "<a class='btn btn-light ajaxCall' id='acl_$ACL' href='/ajax?action=acl_toggle&acl=$ACL'><i class='fa fa-square-o' aria-hidden='true'></i> $ACL </a>&nbsp;";
+		    }
+		}
+?>
+		    </div>
+		</div>
 		<button type="submit" class="btn btn-default">Save</button>
 	    </div>
 	</form>

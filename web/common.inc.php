@@ -8,6 +8,17 @@ require_once "phpmailer/Exception.php";
 
 require_once "config.inc.php";
 
+// ============================ Default user ACL
+$CFG["defaultUserAcl"] = array(
+    'canLogin' => true,
+    'manageUsers' => false,
+    'manageSystem' => false,
+    'manageNetworks' => true,
+    'manageAgents' => true,
+    'manageTriggers' => true,
+);
+// ============================
+
 $sessionId = session_id();
 
 if(empty($sessionId)) {
@@ -22,7 +33,11 @@ if($DB==false) {
 }
 
 $mySession = new Session($sessionId);
+if($mySession->isLogged()) {
+    $myUser = new User($mySession->userId);
+}
 $myConfig = new Config();
+
 
 if(isset($_GET["action"])) {
     $post_action = sanitize($_GET["action"]);
@@ -35,19 +50,24 @@ if(!empty($post_action)) {
 	$auth_email = sanitize($_POST["email"]);
 	$auth_password = sanitize($_POST["password"]);
 
-	$result = doQuery("SELECT ID FROM Users WHERE userName='$auth_email' AND userPassword=PASSWORD('$auth_password');");
+	$result = doQuery("SELECT ID FROM Users WHERE Name='$auth_email' AND 'Password'=PASSWORD('$auth_password');");
 	if(mysqli_num_rows($result) > 0) {
 	    $row = mysqli_fetch_array($result,MYSQLI_ASSOC);
 
 	    $myUser = new User($row["ID"]);
-	    $mySession->userId = $myUser->id;
 
-	    doQuery("UPDATE Sessions SET userId='$myUser->ID' WHERE ID='$mySession->id';");
-	    doQuery("UPDATE Users SET lastlogin=NOW() WHERE ID='$myUser->id';");
+	    if($myUser->getACL('canLogin')) {
+		$mySession->userId = $myUser->id;
 
-	    $mySession->sendMessage("Welcome back ".$myUser->getName());
+	        doQuery("UPDATE Sessions SET userId='$myUser->id' WHERE ID='$mySession->id';");
+		doQuery("UPDATE Users SET lastlogin=NOW() WHERE ID='$myUser->id';");
 
-	    LOGWrite("User $myUser->Name logged in from IP ".getClientIP());
+	        $mySession->sendMessage("Welcome back ".$myUser->getName());
+
+		LOGWrite("User $myUser->name logged in from IP ".getClientIP());
+	    } else {
+	        $mySession->sendMessage("Sorry ".$myUser->getName().", your account was disabled.","warning");
+	    }
 
 	    header("Location: /");
 	    exit();
@@ -68,9 +88,58 @@ if(!empty($post_action)) {
 	    exit();
 	}
     }
-    // Posts acstions only for LOGGED users
+    // Posts actions only for LOGGED users
     if($mySession->isLogged()) {
 
+	//
+	// User add or edit CB
+	//
+	if($post_action == "cb_user_edit") {
+	    if($myUser->getACL('manageUsers')) {
+		$user_id = intval($_POST["user_id"]);
+	        $user_email = mysqli_real_escape_string($DB,sanitize($_POST["user_email"]));
+		$user_name = mysqli_real_escape_string($DB,sanitize($_POST["user_name"]));
+	        $user_alias = mysqli_real_escape_string($DB,sanitize($_POST["user_alias"]));
+		
+		if($user_id > 0) {
+		    // Update existing account
+		    doQuery("UPDATE Users SET Name='$user_name',eMail='$user_email',Alias='$user_alias' WHERE ID='$user_id';");
+		    $mySession->sendMessage("User $user_id updated successfully !");
+		    LOGWrite("User $user_id updated",LOG_DEBUG);
+		} else {
+		    // Create new
+		    doQuery("INSERT INTO Users(Name,eMail,Alias,addDate) VALUES ('$user_name','$user_email','$user_alias',NOW());");
+		    $mySession->sendMessage("User $user_id created successfully !");
+		    $user_id = mysqli_insert_id($DB);
+	        }
+		
+		$tmpUser = new User($user_id);
+		foreach(array_keys($CFG["defaultUserAcl"]) as $ACL) {
+		    if($_POST["acl_".$ACL] == "on") {
+			$tmpUser->setACL($ACL,true);
+		    } else {
+			$tmpUser->setACL($ACL,false);
+		    }
+		}
+
+		if($_POST["reset_password"] == "on") {
+		    $user_password = APG(5);
+		    doQuery("UPDATE Users SET 'Password'=PASSWORD('$user_password') WHERE ID='$user_id';");
+		    // Send e-mail with new password
+		    sendMail($tmpUser->eMail, $tmpuser->name, "Nidan password", "Password for user $tmpUser->name is $user_password");
+		}
+	    }
+	}
+	//
+	// User remove CB
+	//
+	if($post_action == "cb_user_remove") {
+	    if($myUser->getACL('manageUsers')) {
+		$user_id = intval($_POST["user_id"]);
+		doQuery("DELETE FROM Users WHERE ID='$user_id';");
+		$mySession->sendMessage("User $user_id removed !");
+	    }
+	}
 	//
 	// Agent add or edit CB
 	//
@@ -189,14 +258,14 @@ if(!empty($post_action)) {
 
 	    if(strlen($account_password > 0)) {
 		if(strcmp($account_password,$account_password_val)==0) {
-		    doQuery("UPDATE Users SET userName='$account_name',userPassword='$account_password',userEmail='$account_email',userAlias='$account_alias' WHERE ID='$account_id';");
+		    doQuery("UPDATE Users SET Name='$account_name','Password'='$account_password',Email='$account_email',Alias='$account_alias' WHERE ID='$account_id';");
 		    $mySession->sendMessage("Account $account_id updated successfully !");
 		    LOGWrite("Account $account_it updated",LOG_DEBUG);
 		} else {
 		    $mySession->sendMessage("Password don't match: try again !","error");
 		}
 	    } else {
-		doQuery("UPDATE Users SET userName='$account_name',userEmail='$account_email',userAlias='$account_alias' WHERE ID='$account_id';");
+		doQuery("UPDATE Users SET Name='$account_name',eMail='$account_email',Alias='$account_alias' WHERE ID='$account_id';");
 		$mySession->sendMessage("Account $account_id updated successfully !");
 	    }
 	}
@@ -230,6 +299,18 @@ function isSelected($value,$match) {
 
 function isChecked($value) {
     if($value) return "checked";
+}
+
+function getHumanETA($mins) {
+    if($mins > 60) {
+	$tmp_hour = intval($mins/60);
+        $tmp_mins = $mins % 60;
+	return $tmp_hour." hours and ".$tmp_mins." mins ago";
+    } else if($mins > 0) {
+        return $mins." mins ago";
+    } else {
+        return "now";
+    }
 }
 
 function getPagination($cur_page,$total_items,$base_url,$items_per_page=10) {
@@ -338,8 +419,6 @@ function LOGWrite($message,$priority=LOG_DEBUG) {
 }
 
 function sendMail($toEmail, $toName, $subject, $message) {
-    global $CFG;
-
     $mail = new PHPMailer(true);
     $mail->IsSMTP(); 
     try {
@@ -423,23 +502,51 @@ class Config {
     }
 }
 
+
 class User {
     var $id=false;
     var $name;
     var $eMail;
     var $loginETA;
     var $alias;
+    var $ACL;
 
-    function __construct($ID) {
-	$result = doQuery("SELECT ID,userName,userAlias,userEmail,DATEDIFF(NOW(),lastLogin) AS loginETA FROM Users WHERE ID='$ID';");
+    function __construct($id) {
+	global $CFG;
+	$result = doQuery("SELECT ID,Name,Alias,eMail,ACL,DATEDIFF(NOW(),lastLogin) AS loginETA FROM Users WHERE ID='$id';");
 	if(mysqli_num_rows($result) > 0) {
 	    $row = mysqli_fetch_array($result,MYSQLI_ASSOC);
 	    $this->id = $row["ID"];
-	    $this->name = stripslashes($row["userName"]);
-	    $this->eMail = stripslashes($row["userEmail"]);
-	    $this->alias = stripslashes($row["userAlias"]);
+	    $this->name = stripslashes($row["Name"]);
+	    $this->eMail = stripslashes($row["eMail"]);
+	    $this->alias = stripslashes($row["Alias"]);
 	    $this->loginETA = $row["loginETA"];
+
+	    $this->loadACL();
+
+	    // User ACL values
+	    if(!empty($row["ACL"])) {
+		foreach(unserialize(stripslashes($row["ACL"])) as $key => $value) {
+	    	    $this->ACL[$key] = $value;
+		}
+	    }
 	}
+    }
+
+    function __destruct() {
+	global $DB;
+	// Save ACL array
+	$tmp_acl = mysqli_real_escape_string($DB,serialize($this->ACL));
+	doQuery("UPDATE Users SET ACL='$tmp_acl' WHERE ID='$this->id';");
+    }
+
+    function loadACL() {
+	global $CFG;
+	// Populate ACL
+	foreach($CFG["defaultUserAcl"] as $name => $value) {
+	    $this->ACL[$name] = $value;
+	}
+
     }
 
     function getName() {
@@ -448,6 +555,16 @@ class User {
 	} else {
 	    return $this->eMail;
 	}
+    }
+    
+    /* Return value of specific ACL */
+    public function getACL($name) {
+    	return $this->ACL[$name];
+    }
+
+    /* Set value of specific ACL */
+    public function setACL($name,$value) {
+	$this->ACL[$name] = $value;
     }
 }
 

@@ -1,6 +1,6 @@
 <?php
 
-define("DB_VERSION","0.0.1pre4");
+define("DB_VERSION","0.0.1pre5");
 
 include_once "common.inc.php";
 
@@ -21,6 +21,9 @@ if(isset($pageTitle)) {
     echo "<title>Nidan</title>";
 }
 ?>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#333333"/>
 
     <link href="/css/bootstrap.min.css" rel="stylesheet">
     <link href="/css/tether.min.css" rel="stylesheet">
@@ -43,7 +46,7 @@ if(file_exists("./css/".$local_css)) {
 	<button class="navbar-toggler navbar-toggler-right hidden-lg-up" type="button" data-toggle="collapse" data-target="#navbarTop" aria-controls="navbarTop" aria-expanded="false" aria-label="Toggle navigation">
 	    <span class="navbar-toggler-icon"></span>
 	</button>
-	<a class="navbar-brand" href="/"><img src="/img/header_logo.png" class="img-responsive header-logo" /> Nidan</a>
+	<a class="navbar-brand" href="/"><img src="/img/header_logo.png" class="img-responsive header-logo" alt="Nidan logo"/> Nidan</a>
 <?php
 if($mySession->isLogged()) {
 ?>
@@ -60,13 +63,13 @@ if($mySession->isLogged()) {
 		</li>
 	    </ul>
 	    <form class="form-inline mt-2 mt-md-0" action="/search" method="GET">
-		<input class="form-control mr-sm-2 validate[required]" type="search" name="q" placeholder="Search host/service" value="<?php if(isset($_GET["q"])) { echo $_GET["q"]; }?>">
+		<input class="form-control mr-sm-2 validate[required]" type="search" name="q" label="search" placeholder="Search host/service" value="<?php if(isset($_GET["q"])) { echo $_GET["q"]; }?>">
 		<button class="btn my-2 my-sm-0" type="submit">Search</button>
 	    </form>
 	</div>
 <?php
 }
-echo "<!-- SID: $mySession->ID -->\n";
+echo "<!-- SID: $mySession->id -->\n";
 ?>
     </nav>
     <div class="container-fluid"><!-- CONTAINER -->

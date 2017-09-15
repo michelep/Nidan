@@ -201,7 +201,6 @@ class NidanController
 				    LOGWrite("REST::host_scan_compare($job->id)::FIRST TIME::".var_export($old_host_scenario, true)."::".var_export($new_host_scenario, true)."",LOG_DEBUG);
 				}
 			    }
-
 			    // and finally, raise event !
 			    raiseEvent($this->agent_id,$job->id,"job_end");
 			    break;
@@ -311,7 +310,11 @@ class NidanController
 		$port = sanitize($_POST["port"]);
 		$proto = sanitize($_POST["proto"]);
 		$state = sanitize($_POST["state"]);
-		$banner = mysqli_real_escape_string($DB,sanitize($_POST["banner"]));
+		if(!empty($_POST["banner"])) {
+		    $banner = mysqli_real_escape_string($DB,sanitize($_POST["banner"]));
+		} else {
+		    $banner = NULL;
+		}
 
 		$job = new Job($job_id);
 		// $job->itemId contains hostId

@@ -34,7 +34,7 @@ if(file_exists("./js/".$local_js)) {
     echo "\t<!-- local JS -->\n\t<script src=\"/js/".$local_js."\"></script>\n";
 }
 
-$result = doQuery("SELECT ID,Type,Message FROM SessionMessages WHERE sessionId='$mySession->ID' ORDER BY addDate DESC;");
+$result = doQuery("SELECT ID,Type,Message FROM SessionMessages WHERE sessionId='$mySession->id' ORDER BY addDate DESC;");
 if(mysqli_num_rows($result) > 0) {
 ?>
 	<script type="text/javascript">

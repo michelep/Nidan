@@ -130,8 +130,11 @@ if(mysqli_num_rows($result) > 0) {
 	    <td>".$net_adddate->format("H:i:s d-M-Y")."</td>
 	    <td>".($net_lastcheck ? $net_lastcheck->format("H:i:s d-M-Y"): "None")."</td>
 	    <td>".($net_scantime ? $net_scantime." secs" : "Not done yet !")."</td>
-	    <td><a class='ajaxDialog' title='Edit network' href='/ajax?action=network_edit&id=$net_id'><i class='fa fa-pencil-square' aria-hidden='true'></i></a></td>
-	</tr>";
+	    <td>";
+	if($myUser->getACL('manageNetworks')) {
+		echo "<a class='ajaxDialog' title='Edit network' href='/ajax?action=network_edit&id=$net_id'><i class='fa fa-pencil-square' aria-hidden='true'></i></a></td>";
+	}
+	echo "</tr>";
     }
 } else {
     echo "<tr><td colspan=10>No networks !</td></tr>";
@@ -139,10 +142,15 @@ if(mysqli_num_rows($result) > 0) {
 ?>
     </tbody></table>
     </div>
-
+<?php
+if($myUser->getACL('manageNetworks')) {
+?>
     <div class="btn-group" role="group" aria-label="Network actions">
 	<a class="btn btn-secondary ajaxDialog" href="/ajax?action=network_edit" title="Add new network"><i class="fa fa-plus-circle" aria-hidden="true"></i> Add new network</a>
     </div>
+<?php
+}
+?>
 </main>
 
 <?php 

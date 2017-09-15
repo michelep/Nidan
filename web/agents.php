@@ -66,13 +66,7 @@ if(isset($agent_id)) {
 		    $agent_status = "fa-circle-o text-success";
 		}
 
-		if($row["lastSeen"] > 60) {
-		    $agent_lastseen = $row["lastSeen"]." mins ago";
-		} else if($row["lastSeen"] > 0) {
-		    $agent_lastseen = $row["lastSeen"]." mins ago";
-		} else {
-		    $agent_lastseen = "now";
-		}
+		$agent_lastseen = getHumanETA($row["lastSeen"]);
 
 		echo "<tr>
 		    <td><i class='fa $agent_status' aria-hidden='true'></i></td>
@@ -82,8 +76,11 @@ if(isset($agent_id)) {
 		    <td>$agent_hostname</td>
 		    <td>$agent_lastseen</td>
 		    <td>".$agent_adddate->format("H:i:d d:M:Y")."</td>
-		    <td><a class='ajaxDialog' title='Edit agent' href='/ajax?action=agent_edit&id=$agent_id'><i class='fa fa-pencil-square' aria-hidden='true'></i></a></td>
-		</tr>";
+		    <td>";
+		if($myUser->getACL('manageAgents')) {
+		    echo "<a class='ajaxDialog' title='Edit agent' href='/ajax?action=agent_edit&id=$agent_id'><i class='fa fa-pencil-square' aria-hidden='true'></i></a>";
+		}
+		echo "</td></tr>";
 	    }
 	} else {
 	    echo "<tr><td colspan=10>No agents registered ...yet !</td></tr>";
@@ -92,10 +89,14 @@ if(isset($agent_id)) {
 	</tbody></table>
     </div>
     <div class="clearfix">&nbsp;</div>
+<?php
+    if($myUser->getACL('manageAgents')) {
+?>
     <div class="btn-group" role="group" aria-label="Agents actions">
 	<a class="btn btn-secondary ajaxDialog" href="/ajax?action=agent_edit" title="Add new agent"><i class="fa fa-plus-circle" aria-hidden="true"></i> Add new agent</a>
     </div>
 <?php
+    }
 }
 ?>
 </main>
