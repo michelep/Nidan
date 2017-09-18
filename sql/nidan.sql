@@ -3,7 +3,7 @@
 -- http://www.phpmyadmin.net
 --
 -- Host: localhost
--- Creato il: Set 15, 2017 alle 14:53
+-- Creato il: Set 18, 2017 alle 16:18
 -- Versione del server: 10.0.31-MariaDB-0ubuntu0.16.04.2
 -- Versione PHP: 7.0.22-0ubuntu0.16.04.1
 
@@ -36,6 +36,7 @@ CREATE TABLE `Agents` (
   `Description` text NOT NULL,
   `IP` varchar(32) DEFAULT NULL,
   `Hostname` varchar(64) DEFAULT NULL,
+  `Version` varchar(16) DEFAULT NULL,
   `isEnable` tinyint(1) NOT NULL DEFAULT '0',
   `isOnline` tinyint(1) DEFAULT NULL,
   `addDate` datetime NOT NULL,
@@ -60,7 +61,7 @@ CREATE TABLE `Config` (
 
 INSERT INTO `Config` (`Name`, `Value`) VALUES
 ('db_version', '0.0.1pre5'),
-('mail_from_mail', 'nidan@localhost'),
+('mail_from_mail', 'nidan@zerozone.it'),
 ('mail_from_name', 'Nidan'),
 ('mail_server_host', 'localhost'),
 ('mail_server_port', '25'),
@@ -271,7 +272,7 @@ CREATE TABLE `Users` (
 --
 
 INSERT INTO `Users` (`ID`, `Name`, `Password`, `eMail`, `Alias`, `ACL`, `addDate`, `lastLogin`) VALUES
-(1, 'admin@localhost', '*4ACFE3202A5FF5CF467898FC58AAB1D615029441', 'o-zone@zerozone.it', '', 'a:6:{s:8:"canLogin";b:1;s:11:"manageUsers";b:1;s:12:"manageSystem";b:1;s:14:"manageNetworks";b:1;s:12:"manageAgents";b:1;s:14:"manageTriggers";b:1;}', '2017-07-10 16:06:47', '2017-09-15 08:40:31');
+(1, 'admin@localhost', '*4ACFE3202A5FF5CF467898FC58AAB1D615029441', 'michele.pinassi@unisi.it', '', 'a:6:{s:8:"canLogin";b:1;s:11:"manageUsers";b:1;s:12:"manageSystem";b:1;s:14:"manageNetworks";b:1;s:12:"manageAgents";b:1;s:14:"manageTriggers";b:1;}', '2017-07-10 16:06:47', '2017-09-15 08:40:31');
 
 --
 -- Indici per le tabelle scaricate

@@ -43,8 +43,9 @@ class NidanController
 
 	if($this->agent_id) {
 	    $hostname = mysqli_real_escape_string($DB,$_POST["hostname"]);
+	    $version = mysqli_real_escape_string($DB,$_POST["version"]);
 
-	    doQuery("UPDATE Agents SET isOnline=1,IP='".getClientIP()."',Hostname='$hostname' WHERE ID='$this->agent_id';");
+	    doQuery("UPDATE Agents SET isOnline=1,IP='".getClientIP()."',Hostname='$hostname',Version='$version' WHERE ID='$this->agent_id';");
 
 	    // Mark as not started staled JOBs for this agent...
 	    doQuery("UPDATE JobsQueue SET startDate=NULL WHERE agentId='$this->agent_id' AND endDate IS NULL");

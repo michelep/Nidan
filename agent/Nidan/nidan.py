@@ -11,7 +11,7 @@ from config import Config
 
 from scanner import *
 
-class Nidan:
+class NidanLoop:
     def __init__(self):
 	res = Config.client.post('/job/get')
 
@@ -50,3 +50,14 @@ class Nidan:
 		print "No jobs for me...yet !"
 	else:
 	    pass
+
+def Nidan():
+    NidanLoop()
+
+#    schedule.every(1).minutes.do(NidanLoop)
+
+    while is_run:
+#        schedule.run_pending()
+	NidanLoop()
+        time.sleep(60)
+
