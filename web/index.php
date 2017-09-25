@@ -15,14 +15,12 @@ include_once "common_sidebar.php";
 <?php
 // Check release
 $db_version = $myConfig->get("db_version");
-if(strncmp("DB_VERSION",$db_version) != 0) {
+if(strcasecmp(DB_VERSION,$db_version) != 0) {
     echo "<div class='alert alert-danger' role='alert'>
-	 <strong>Version mismatch !</strong> Your DB version doesn't match. Please run <a href='/install'>install script</a> to check and upgrade, if needed
+	 <strong>Version mismatch !</strong> Your DB version ($db_version) doesn't match required version (".DB_VERSION."). Please run <a href='/install'>install script</a> to check and upgrade, if needed
     </div>";
 }
 ?>
-    <div class="row">
-
     <div class="row">
         <div class="col-lg-3 col-md-6">
             <div class="card card-inverse card-success">

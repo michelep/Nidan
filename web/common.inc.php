@@ -2,9 +2,11 @@
 
 use PHPMailer\PHPMailer\PHPMailer;
 
-require_once "phpmailer/PHPMailer.php";
-require_once "phpmailer/SMTP.php";
-require_once "phpmailer/Exception.php";
+require_once __DIR__."/phpmailer/PHPMailer.php";
+require_once __DIR__."/phpmailer/SMTP.php";
+require_once __DIR__."/phpmailer/Exception.php";
+
+require_once __DIR__."/PhpConsole/__autoload.php";
 
 require_once "config.inc.php";
 
@@ -19,6 +21,17 @@ $CFG["defaultUserAcl"] = array(
 );
 // ============================
 
+// ============================ PHPConsole
+$connector = PhpConsole\Helper::register();
+
+if($connector->isActiveClient()) {
+	// Init errors & exceptions handler
+	$handler = PC::getHandler();
+	$handler->start(); // start handling PHP errors & exceptions
+}
+// ===========================
+
+// ============================ Session handler
 $sessionId = session_id();
 
 if(empty($sessionId)) {
@@ -26,11 +39,19 @@ if(empty($sessionId)) {
     $sessionId = session_id();
 }
 
+// ===========================
+
+// ============================ DBMS 
+
+define("DB_VERSION","0.0.1pre6");
+
 $DB = OpenDB();
 if($DB==false) {
     // If DB fails, jump to installer...
     header('Location: /install');
 }
+
+// ===========================
 
 $mySession = new Session($sessionId);
 if($mySession->isLogged()) {
@@ -47,10 +68,10 @@ if(isset($_GET["action"])) {
 
 if(!empty($post_action)) {
     if($post_action == "signin") {
-	$auth_email = sanitize($_POST["email"]);
-	$auth_password = sanitize($_POST["password"]);
+	$auth_email = mysqli_real_escape_string($DB,sanitize($_POST["email"]));
+	$auth_password = mysqli_real_escape_string($DB,sanitize($_POST["password"]));
 
-	$result = doQuery("SELECT ID FROM Users WHERE Name='$auth_email' AND 'Password'=PASSWORD('$auth_password');");
+	$result = doQuery("SELECT ID FROM Users WHERE Name='$auth_email' AND Password=PASSWORD('$auth_password');");
 	if(mysqli_num_rows($result) > 0) {
 	    $row = mysqli_fetch_array($result,MYSQLI_ASSOC);
 
@@ -305,7 +326,13 @@ function getHumanETA($mins) {
     if($mins > 60) {
 	$tmp_hour = intval($mins/60);
         $tmp_mins = $mins % 60;
-	return $tmp_hour." hours and ".$tmp_mins." mins ago";
+	if($tmp_hour > 24) {
+	    $tmp_days = intval($tmp_hour/24);
+	    $tmp_hour = $tmp_hour % 24;
+	    return $tmp_days." days, ".$tmp_hour." hours and ".$tmp_mins." mins ago";
+	} else {
+	    return $tmp_hour." hours and ".$tmp_mins." mins ago";
+	}
     } else if($mins > 0) {
         return $mins." mins ago";
     } else {
@@ -344,8 +371,8 @@ function getPagination($cur_page,$total_items,$base_url,$items_per_page=10) {
     } else {
 	$max = $cur_page+3;
     }
-    echo "	<li class='page-item ".($prev_page ? '':'disabled')."'>
-		    <a class='page-link' href='".($base_url.'?p='.$prev_page)."' tabindex='-1'>Previous</a>
+    echo "	<li class='page-item'>
+		    <a class='page-link' href='".($base_url.'?p=1')." tabindex='-1'>First</a>
 		</li>";
 
     if($min > 1) {
@@ -365,8 +392,8 @@ function getPagination($cur_page,$total_items,$base_url,$items_per_page=10) {
 		</li>";
     }
 
-    echo "	<li class='page-item ".($next_page ? '':'disabled')."'>
-		    <a class='page-link' href='".($base_url.'?p='.$next_page)."'>Next</a>
+    echo "	<li class='page-item'>
+		    <a class='page-link' href='".($base_url.'?p='.$num_pages)."'>Last</a>
 		</li>
 	    </ul>
 	</nav>";

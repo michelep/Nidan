@@ -3,7 +3,7 @@
 -- http://www.phpmyadmin.net
 --
 -- Host: localhost
--- Creato il: Set 18, 2017 alle 16:18
+-- Creato il: Set 25, 2017 alle 13:52
 -- Versione del server: 10.0.31-MariaDB-0ubuntu0.16.04.2
 -- Versione PHP: 7.0.22-0ubuntu0.16.04.1
 
@@ -60,8 +60,8 @@ CREATE TABLE `Config` (
 --
 
 INSERT INTO `Config` (`Name`, `Value`) VALUES
-('db_version', '0.0.1pre5'),
-('mail_from_mail', 'nidan@zerozone.it'),
+('db_version', '0.0.1pre6'),
+('mail_from_mail', 'nidan@localhost'),
 ('mail_from_name', 'Nidan'),
 ('mail_server_host', 'localhost'),
 ('mail_server_port', '25'),
@@ -221,10 +221,9 @@ CREATE TABLE `Sessions` (
 DROP TABLE IF EXISTS `Stats`;
 CREATE TABLE `Stats` (
   `addDate` datetime NOT NULL,
-  `netId` smallint(6) NOT NULL,
-  `totalHosts` int(11) NOT NULL,
-  `totalServices` int(11) NOT NULL,
-  `scanTime` decimal(10,0) NOT NULL
+  `Item` varchar(16) NOT NULL,
+  `itemId` int(11) DEFAULT NULL,
+  `Value` text
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 -- --------------------------------------------------------
@@ -272,7 +271,7 @@ CREATE TABLE `Users` (
 --
 
 INSERT INTO `Users` (`ID`, `Name`, `Password`, `eMail`, `Alias`, `ACL`, `addDate`, `lastLogin`) VALUES
-(1, 'admin@localhost', '*4ACFE3202A5FF5CF467898FC58AAB1D615029441', 'michele.pinassi@unisi.it', '', 'a:6:{s:8:"canLogin";b:1;s:11:"manageUsers";b:1;s:12:"manageSystem";b:1;s:14:"manageNetworks";b:1;s:12:"manageAgents";b:1;s:14:"manageTriggers";b:1;}', '2017-07-10 16:06:47', '2017-09-15 08:40:31');
+(1, 'admin@localhost', '*4ACFE3202A5FF5CF467898FC58AAB1D615029441', NULL, '', 'a:6:{s:8:"canLogin";b:1;s:11:"manageUsers";b:1;s:12:"manageSystem";b:1;s:14:"manageNetworks";b:1;s:12:"manageAgents";b:1;s:14:"manageTriggers";b:1;}', '2017-07-10 16:06:47', '2017-09-25 12:20:35');
 
 --
 -- Indici per le tabelle scaricate

@@ -1,3 +1,9 @@
+0.0.1pre6 - 25 Sep 2017
+* [Web Gui] Fixed a bug on DB version comparison
+* [Web Gui] Added support for PHP Console debugging tool (https://github.com/barbushin/php-console)
+* [Web Gui] Fix a typo in login procedure
+* [DB] Some changes on DB structure, move to 0.0.1pre6
+
 0.0.1pre5 - 18 Sep 2017
 * [Web Gui] Minor cleanups and fixes
 * [Agent] Add support for daemonizing,logging and version check

@@ -64,7 +64,8 @@ Open a browser and go to your web server. Default username:password is "admin@lo
 
 ## Install Agents
 
-Copy all files under 'agent' folder where you want to run an agent (also on the same machine as frontend). Open nidan.cfg with a text editor ('nano' is ok) and configure:
+First, add a new Agent from "Agents" page and write down/copy API key. Copy all files under 'agent' folder where you want to run an agent (also on the same machine as frontend). 
+Open nidan.cfg with a text editor ('nano' is ok) and configure:
 
     [Agent]
     apiKey=*[this agent API key]*
@@ -91,7 +92,6 @@ Join our public ML [nidan-users-ml](https://groups.google.com/forum/#!forum/nida
 ## Want to support Nidan developement ? Get a shirt !
 
 Developing Nidan costs time and money. Please support us buying a [Nidan t-shirts](https://shop.spreadshirt.it/Nidan/) or [donate via PayPal](https://PayPal.Me/MichelePinassi)
-
 
 ## Author
 
