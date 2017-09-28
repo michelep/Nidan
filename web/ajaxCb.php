@@ -145,6 +145,22 @@ if($mySession->isLogged()) {
     }
 
     /* ===========================================
+    Send test e-mail
+    =========================================== */
+    if($ajax_action == "mail_test") {
+	if(filter_var($myUser->eMail, FILTER_VALIDATE_EMAIL)) {
+	    $msg = "Dear $myUser->name,\nas you requested, here's a test mail.";
+	    if(sendMail($myUser->eMail,$myUser->name,"NIDAN TEST EMAIL",$msg)) {
+		echo "Test mail sent to $myUser->eMail...";
+	    } else {
+		echo "Oops ! Something goes wrong while sending test e-mail to $myUser->eMail...";
+	    }
+	} else {
+	    echo "Invalid e-mail address $myUser->eMail !";
+	}
+    }
+
+    /* ===========================================
     Toggle user ACL
     =========================================== */
     if($ajax_action == "acl_toggle") {

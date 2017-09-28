@@ -41,6 +41,10 @@ include_once "common_sidebar.php";
 	}
 ?>
 	</tbody></table>
+	<div class="clearfix">&nbsp;</div>
+	<div class="btn-group" role="group" aria-label="Actions">
+	    <a class="btn btn-secondary ajaxCall" href="/ajax?action=mail_test"><i class="fa fa-envelope-o" aria-hidden="true"></i> Send test mail </a>
+	</div>
     </div>
 </main>
 

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 #
 # Nidan
-# 0.0.1pre5
+# 0.0.1rc7
 #
 # (C) 2017 Michele <o-zone@zerozone.it> Pinassi
 
@@ -29,33 +29,6 @@ from Nidan.nidan import *
 from Nidan.config import Config
 from Nidan.restclient import RESTClient
 
-conf = ConfigParser.ConfigParser()
-conf.read('nidan.cfg')
-
-Config.agent_version = "0.0.1pre5"
-
-Config.agent_hostname = socket.gethostname()
-Config.agent_apikey = conf.get('Agent','apiKey')
-Config.server_url = conf.get('Agent','serverUrl')
-Config.pid_file = conf.get('Agent','PIDfile')
-Config.log_file = conf.get('Agent','LOGfile')
-Config.daemonize = conf.get('Agent','daemonize')
-
-logging.basicConfig(level=logging.DEBUG, format="%(asctime)s;%(levelname)s;%(message)s")
-flh = logging.FileHandler(Config.log_file, "w")
-Config.log = logging.getLogger(__file__)
-Config.log.addHandler(flh)
-
-################################################################################### CONFIGURATION START
-# Default values
-
-# Server properties
-#Config.agent_apikey = "ac0365a9173ffa491e05815c5d0e50fd"
-
-################################################################################### CONFIGURATION END
-
-# Setup client connection with Nidan server
-Config.client = RESTClient(Config.agent_apikey, Config.server_url)
 
 is_run = True
 
@@ -69,17 +42,42 @@ def handler_stop_signals(signum, frame):
     is_run = False
 
 if __name__ == '__main__':
+
+    Config.config_file = ['/etc/nidan/nidan.cfg', os.path.expanduser('~/.nidan.cfg')]
+
     try:
-	opts, args = getopt.getopt(sys.argv[1:],"hs:",["server:"])
+	opts, args = getopt.getopt(sys.argv[1:],"hs:c:",["server:config:"])
     except getopt.GetoptError:
-	print 'nidan.py [-h for help] [-s Nidan server]'
+	print 'nidan.py [-h for help] [-s Nidan server] [-c Config file]'
 	sys.exit(2)
     for opt, arg in opts:
 	if opt == '-h':
-	    print 'nidan.py [-h for help] [-s Nidan server]'
+	    print 'nidan.py [-h for help] [-s Nidan server] [-c Config file]'
 	    sys.exit()
 	elif opt in ("-s", "--server"):
 	    Config.server_url = arg
+	elif opt in ("-c", "--config"):
+	    Config.config_file = arg
+
+    conf = ConfigParser.ConfigParser()
+    conf.read(Config.config_file)
+    
+    Config.agent_version = "0.0.1rc7"
+
+    Config.agent_hostname = socket.gethostname()
+    Config.agent_apikey = conf.get('Agent','apiKey')
+    Config.server_url = conf.get('Agent','serverUrl')
+    Config.pid_file = conf.get('Agent','PIDfile')
+    Config.log_file = conf.get('Agent','LOGfile')
+    Config.daemonize = conf.get('Agent','daemonize')
+
+    logging.basicConfig(level=logging.DEBUG, format="%(asctime)s;%(levelname)s;%(message)s")
+    flh = logging.FileHandler(Config.log_file, "w")
+    Config.log = logging.getLogger(__file__)
+    Config.log.addHandler(flh)
+
+    # Setup client connection with Nidan server
+    Config.client = RESTClient(Config.agent_apikey, Config.server_url)
 
     if os.path.isfile(Config.pid_file):
 	print "PID file exists"

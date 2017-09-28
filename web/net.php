@@ -15,7 +15,6 @@ if(isset($_GET["id"])) {
 	$row = mysqli_fetch_array($result,MYSQLI_ASSOC);
 	$net_address = $row["Network"];
 	$net_desc = $row["Description"];
-	$net_hcount = $row["Hosts"];
     	$net_adddate = new DateTime($row["addDate"]);
     	$net_lastcheck = new DateTime($row["lastCheck"]);
 

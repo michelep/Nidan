@@ -446,6 +446,8 @@ function LOGWrite($message,$priority=LOG_DEBUG) {
 }
 
 function sendMail($toEmail, $toName, $subject, $message) {
+    global $myConfig;
+
     $mail = new PHPMailer(true);
     $mail->IsSMTP(); 
     try {

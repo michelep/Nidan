@@ -27,16 +27,26 @@ For Agents:
 * Python-nmap module, at least 0.6.1 (pip install python-nmap - https://pypi.python.org/pypi/python-nmap)
 * Python schedule (pip install schedule - https://schedule.readthedocs.io/en/stable/)
 * Python jsonpickle (pip install jsonpickle)
-* Python request (pip install request)
+* Python requests (pip install requests)
 
 ## Install Web frontend and REST server
 
 ![Summary page](assets/screenshot_4.jpg "Summary page")
 
-Create a new database ('nidan' ?) and use /sql/nidan.sql to recreate tables. Copy all /web content to web server root folder (usually /var/www/),
-enable apache2 mod-rewrite if not ('a2enmod rewrite' as root) and check/change db access configuration in common.inc.php
+Create a new database ('nidan' ?) and import /sql/nidan.sql with mysql to create needed tables:
 
-Don't forget to enable "AllowOverride All" in virtual host instance, like:
+    mysql -h [host] -u [user] -p < ./sql/nidan.sql
+
+Now prepare web folder, copying all /web content to web server root folder (usually /var/www/) or wherever you want to store PHP pages.
+Enable apache2 mod-rewrite if not ('a2enmod rewrite' as root) and check/change db access configuration in config.inc.php:
+
+    $CFG["db_host"] = "localhost";
+    $CFG["db_port"] = "3306";
+    $CFG["db_user"] = "nidan";
+    $CFG["db_password"] = "nidan";
+    $CFG["db_name"] = "nidan";
+
+Then enable "AllowOverride All" in nidan virtual host instance, like:
 
     <VirtualHost _default_:80>
 	ServerAdmin webmaster@localhost
@@ -51,7 +61,45 @@ Don't forget to enable "AllowOverride All" in virtual host instance, like:
 	</Directory>
     </VirtualHost>
 
-and, if you want to use SSL, remember to enable ssl module ('a2enmod ssl' as root).
+and, if you want to use SSL, remember to enable ssl module ('a2enmod ssl' as root) anche change VirtualHost as follow:
+
+    <IfModule mod_ssl.c>
+	<VirtualHost _default_:443>
+	    ServerAdmin webmaster@localhost
+
+	    <Directory /home/web/default>
+		Require all granted
+	    </Directory>
+
+	    DocumentRoot /home/web/default
+
+	    ErrorLog ${APACHE_LOG_DIR}/nidan-error.log
+	    CustomLog ${APACHE_LOG_DIR}/nidan-access.log combined
+
+	    SSLEngine on
+
+	    SSLCertificateFile /etc/ssl/certs/apache-selfsigned.crt
+            SSLCertificateKeyFile /etc/ssl/private/apache-selfsigned.key
+
+            <FilesMatch "\.(cgi|shtml|phtml|php)$">
+                SSLOptions +StdEnvVars
+            </FilesMatch>
+            <Directory /usr/lib/cgi-bin>
+                SSLOptions +StdEnvVars
+            </Directory>
+
+            <Directory /home/web/default>
+		AllowOverride All
+	    </Directory>
+
+            BrowserMatch "MSIE [2-6]" \
+                   nokeepalive ssl-unclean-shutdown \
+                   downgrade-1.0 force-response-1.0
+	</VirtualHost>
+    </IfModule>
+
+You can use self-signed SSL certs ([How To Create a Self-Signed SSL Certificate for Apache](https://www.digitalocean.com/community/tutorials/how-to-create-a-self-signed-ssl-certificate-for-apache-in-ubuntu-16-04)) 
+or use [Let's Encrypt](https://letsencrypt.org/) to get a fully valid free one.
 
 Now add a new cron instance with 'crontab -e', that runs cron.php script every 5 minutes, adding this line:
 
@@ -64,14 +112,21 @@ Open a browser and go to your web server. Default username:password is "admin@lo
 
 ## Install Agents
 
-First, add a new Agent from "Agents" page and write down/copy API key. Copy all files under 'agent' folder where you want to run an agent (also on the same machine as frontend). 
-Open nidan.cfg with a text editor ('nano' is ok) and configure:
+First, add a new Agent from "Agents" page and write down/copy API key. Now you can use setuptools to install Nidan Agents, so run:
+
+    python setup.py build
+    python setup.py install
+
+then copy nidan.cfg file to /etc/nidan/nidan.cfg or ~/.nidan.cfg. Then edit the file and fill apiKey field with API key:
 
     [Agent]
     apiKey=*[this agent API key]*
     serverUrl=*[URL of the server - i.e. https://localhost/rest]*
+    PIDfile=/tmp/nid_agent.pid
+    LOGfile=/var/log/nidan.log
+    daemonize=0
 
-then save and run nidan.py
+remember to change serverUrl if needed ! Then save and run nidan.py
 
 Please note that if you use "https", agent try to connect to SSL port (TCP 443) and fail if something don't work.
 

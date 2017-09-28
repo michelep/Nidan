@@ -1,3 +1,9 @@
+0.0.1rc7 -28 Sep 2017
+* [Web Gui] Fixed some minor bugs
+* [Web Gui] Some improvements in installer
+* [Web Gui] Added "send test e-mail" in configuration page
+* [Agent] Added setup.py for easy building of agents
+
 0.0.1pre6 - 25 Sep 2017
 * [Web Gui] Fixed a bug on DB version comparison
 * [Web Gui] Added support for PHP Console debugging tool (https://github.com/barbushin/php-console)

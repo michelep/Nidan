@@ -2,18 +2,33 @@
 
 include "../config.inc.php";
 
-function check_db($host,$port,$user,$password) {
+$dbTables = array("Agents","Config","EventsLog","Hosts","JobsQueue","Log","Networks","Services","SessionMessages","Sessions","Stats","Triggers","Users");
+
+global $mysqli;
+
+function check_db($host,$port,$user,$password,$name) {
+    global $mysqli;
+
     $mysqli = mysqli_init();
     if (!$mysqli) {
         return "mysqli_init() failed !";
     }
 
-    if (!$mysqli->real_connect($host, $user, $password)) {
+    if (!$mysqli->real_connect($host, $user, $password, $name)) {
         return "Connect Error (".mysqli_connect_errno().") ".mysqli_connect_error();
     }
-
-    $mysqli->close();
     return false;
+}
+
+function do_query($query) {
+    global $mysqli;
+    $result = $mysqli->query($query);
+    if($result === false) {
+	echo "Error while executing query '$query': ".$mysqli->error;
+	return false;
+    }
+    usleep(500);
+    return $result;
 }
 
 ?>
@@ -52,9 +67,10 @@ if(isset($_POST["step"])) {
 	$db_host = $_POST["db_host"];
 	$db_port = $_POST["db_port"];
 	$db_user = $_POST["db_user"];
+	$db_name = $_POST["db_name"];
 	$db_password = $_POST["db_password"];
 
-	$res = check_db($db_host,$db_port,$db_user,$db_password);
+	$res = check_db($db_host,$db_port,$db_user,$db_password,$db_name);
 	if($res != false) {
 	    echo "<div class='alert alert-warning'>
 		$res;
@@ -62,15 +78,47 @@ if(isset($_POST["step"])) {
 	    $step = 0;
 	} else {
 	    echo "<div class='alert alert-success'>
-		<strong>Well done!</strong> Successfully connected to the DB 
+		<strong>Well done!</strong> Successfully connected to the DB. Now check DB structure...
 	    </div>";
-	}
-    
+	    //
+	    $tables = do_query("SHOW TABLES;");
+	    if($tables) {
+		while ($row = $tables->fetch_array()) {
+		    $tmpTables[] = $row[0];
+		}
+		// Free result set
+		$tables->close();
 
+		$result = array_diff($dbTables, $tmpTables);
+		if(count($result) > 0) {
+		    echo "<div class='alert alert-warning'>
+			<strong>Ooops !</strong> DB seems to be not updated...
+		    </div>";
+		    $step = 2;
+		} else {
+		    echo "<div class='alert alert-success'>
+			<strong>OK !</strong> DB seems to be ok, but we check deeply...
+		    </div>";
+		    foreach($dbTables as $table) {
+			$tb = do_query("SHOW COLUMNS FROM $table;");
+			while ($row = $tb->fetch_array()) {
+			    array_unshift($row, $table);
+			    print_r($row);
+			}
+			$tb->close();
+		    }
+		}
+	    } else {
+		echo "<div class='alert alert-warning'>
+		    <strong>Ooops !</strong> No tables here ? 
+		</div>";
+		$step = 1;
+	    }
+	}
     }
 } 
 
-if($step == 0) {// First step
+if($step == 0) {// First step: check DB connection
 ?>
 		<p class="h1">1. Check connection with DBMS</p>
 		<form method="POST">
@@ -85,12 +133,19 @@ if($step == 0) {// First step
 			<label for="dbUser">Database user</label>
 			<input type="text" class="form-control validate[required]" id="dbUser" name="db_user" placeholder="DBMS user (i.e. root)" value="<?php echo $CFG["db_user"]; ?>">
 		    </div><div class="form-group">
+			<label for="dbUser">Database name</label>
+			<input type="text" class="form-control validate[required]" id="dbName" name="db_name" placeholder="Database name (i.e. nidan)" value="<?php echo $CFG["db_name"]; ?>">
+		    </div><div class="form-group">
 			<label for="dbPassword">Database password</label>
 			<input type="password" class="form-control validate[required]" id="dbPassword" name="db_password" placeholder="DBMS password" value="<?php echo $CFG["db_password"]; ?>">
 		    </div><div class="form-group">
 			<input type="submit" value="Check database">
 		    </div>
 		</form>
+<?php
+} else if ($step == 1) { //
+?>
+
 <?php
 }
 ?>

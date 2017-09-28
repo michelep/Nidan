@@ -10,7 +10,7 @@ if(!$mySession->isLogged()) {
 if(!empty($_GET["id"])) {
     $host_id = intval($_GET["id"]);
     
-    $result = doQuery("SELECT ID,IP,MAC,Hostname,isOnline,addDate,stateChange,checkCycle FROM Hosts WHERE ID='$host_id';");
+    $result = doQuery("SELECT ID,IP,MAC,Hostname,isOnline,addDate,stateChange,lastCheck,checkCycle FROM Hosts WHERE ID='$host_id';");
     if(mysqli_num_rows($result) > 0) {
 	$row = mysqli_fetch_array($result,MYSQLI_ASSOC);
 	$host_id = $row["ID"];
@@ -18,6 +18,7 @@ if(!empty($_GET["id"])) {
 	$host_mac = $row["MAC"];
 	$host_name = stripslashes($row["Hostname"]);
     	$host_adddate = new DateTime($row["addDate"]);
+    	$host_lastCheck = new DateTime($row["lastCheck"]);
     	$host_stateChange = new DateTime($row["stateChange"]);
 	$host_checkcycle = $row["checkCycle"];
 
@@ -45,9 +46,9 @@ if(isset($_GET["id"])) {
 	    <p>
 		Added on <?php echo $host_adddate->format("H:i:s d-M-Y"); ?>
 	    </p><p>
-		Last state change on <?php echo ($host_statechange ? $host_statechange->format("H:i:s d-M-Y"):"Never"); ?>
+		Last state change on <?php echo ($host_stateChange ? $host_stateChange->format("H:i:s d-M-Y"):"Never"); ?>
 	    </p><p>
-		Last check on <?php echo ($host_lastcheck ? $host_lastcheck->format("H:i:s d-M-Y"):"planned"); ?>
+		Last check on <?php echo ($host_lastCheck ? $host_lastCheck->format("H:i:s d-M-Y"):"planned"); ?>
 	    </p>
 	</div>
 	<table class="table table-striped">
