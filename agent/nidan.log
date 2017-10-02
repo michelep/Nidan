@@ -5749,3 +5749,63 @@ Banner error: timed out
 port: 631	state: open	banner: None
 port: 873	state: open	banner: @RSYNCD: 30.0
 
+Banner error: timed out
+port: 2049	state: open	banner: None
+Banner error: timed out
+port: 3128	state: open	banner: None
+port: 3493	state: open	banner: 
+Banner error: timed out
+port: 8080	state: open	banner: None
+Banner error: timed out
+port: 8081	state: open	banner: None
+Banner error: timed out
+port: 30000	state: open	banner: None
+Banner error: timed out
+port: 49152	state: open	banner: None
+Scan END in 66 secs
+Starting JOB 20646...
+Start scanning of host 172.16.68.9 with 
+Starting JOB 20647...
+Start scanning of host 172.16.49.71 with 
+Starting JOB 20644...
+Start scanning of host 172.16.64.2 with 
+Starting JOB 20648...
+Start scanning of host 172.16.68.22 with 
+Protocol : tcp
+port: 21	state: open	banner: 220 NASFTPD Turbo station 1.3.5a Server (ProFTPD)
+
+port: 22	state: open	banner: SSH-2.0-OpenSSH_7.3
+
+Protocol : tcp
+port: 23	state: open	banner: [20;1H
+[?25h[20;11H[21;1HSession Terminated, Connect again
+[?25h[21;1H
+Protocol : tcp
+port: 23	state: open	banner: [20;1H
+[?25h[20;11H[21;1HSession Terminated, Connect again
+[?25h[21;1H
+Protocol : tcp
+port: 23	state: open	banner: [20;1H
+[?25h[20;11H[21;1HSession Terminated, Connect again
+[?25h[21;1H
+Banner error: timed out
+port: 80	state: open	banner: None
+Banner error: timed out
+port: 80	state: open	banner: None
+Scan END in 7 secs
+Banner error: timed out
+port: 80	state: open	banner: None
+Scan END in 9 secs
+Banner error: timed out
+port: 80	state: open	banner: None
+Banner error: timed out
+port: 111	state: open	banner: None
+Banner error: timed out
+port: 280	state: open	banner: None
+Banner error: timed out
+port: 139	state: open	banner: None
+Scan END in 16 secs
+Banner error: timed out
+port: 443	state: open	banner: None
+Banner error: timed out
+port: 445	state: open	banner: None

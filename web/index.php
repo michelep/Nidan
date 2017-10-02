@@ -28,7 +28,7 @@ if($CFG["check_updates"]) {
     if($xml === FALSE) { 
 	// Error...
     } else {
-	if(strncasecmp(VERSION,$xml["version"]) != 0) {
+	if(strcasecmp(VERSION,$xml["version"]) != 0) {
 	    echo "<div class='alert alert-warning' role='alert'>
 		 <strong>A new release available !</strong> Nidan ".$xml["version"]." was released: ".$xml["note"].". Update from <a href='https://github.com/michelep/Nidan'>repository</a>
 	    </div>";
