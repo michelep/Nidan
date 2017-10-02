@@ -6377,3 +6377,16 @@ port: 8194	state: open	banner: None
 Banner error: timed out
 port: 27000	state: open	banner: None
 Scan END in 86 secs
+Starting JOB 20692...
+Start scanning of host 172.16.17.251 with 
+Starting JOB 20696...
+Start scanning of host 172.16.21.10 with 
+Scan END in 0 secs
+Starting JOB 20697...
+Start scanning of host 172.16.17.144 with 
+Starting JOB 20698...
+Start scanning of host 172.16.21.101 with 
+Protocol : tcp
+Protocol : tcp
+port: 22	state: open	banner: SSH-1.99-OpenSSH_2.9p2
+
