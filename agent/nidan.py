@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 #
 # Nidan
-# 0.0.1rc7
+# 0.0.1rc8
 #
 # (C) 2017 Michele <o-zone@zerozone.it> Pinassi
 
@@ -15,9 +15,7 @@ import logging
 import time
 import schedule
 import jsonpickle
-
-import daemon
-import lockfile
+import threading
 
 import urllib3
 # Disable invalid SSL certs warning
@@ -25,25 +23,31 @@ urllib3.disable_warnings()
 
 import ConfigParser
 
-from Nidan.nidan import *
+from Nidan.scanner import *
 from Nidan.config import Config
 from Nidan.restclient import RESTClient
 
+Config.is_run = True
 
-is_run = True
-
-# Stop gracefully
+# Stop handler
 def handler_stop_signals(signum, frame):
-    global is_run
-
     Config.client.post("/agent/stop",{"reason":signum})
     Config.log.info("Agent stop");
 
-    is_run = False
+    Config.is_run = False
 
+# Scanner thread
+class scannerThread(threading.Thread):
+    def __init__(self, name):
+	threading.Thread.__init__(self)
+	self.name = name
+
+    def run(self):
+        scannerJob()
+
+# MAIN()
 if __name__ == '__main__':
-
-    Config.config_file = ['/etc/nidan/nidan.cfg', os.path.expanduser('~/.nidan.cfg')]
+    Config.config_file = ['/etc/nidan/nidan.cfg', os.path.expanduser('~/.nidan.cfg'), 'nidan.cfg']
 
     try:
 	opts, args = getopt.getopt(sys.argv[1:],"hs:c:",["server:config:"])
@@ -65,11 +69,12 @@ if __name__ == '__main__':
     Config.agent_version = "0.0.1rc7"
 
     Config.agent_hostname = socket.gethostname()
-    Config.agent_apikey = conf.get('Agent','apiKey')
-    Config.server_url = conf.get('Agent','serverUrl')
-    Config.pid_file = conf.get('Agent','PIDfile')
-    Config.log_file = conf.get('Agent','LOGfile')
-    Config.daemonize = conf.get('Agent','daemonize')
+    Config.agent_apikey = conf.get('Agent','api_key')
+    Config.server_url = conf.get('Agent','server_url')
+    Config.pid_file = conf.get('Agent','pid_file')
+    Config.log_file = conf.get('Agent','log_file')
+    Config.threads_max = int(conf.get('Agent','threads_max'))
+    Config.sleep_time = int(conf.get('Agent','sleep_time'))
 
     logging.basicConfig(level=logging.DEBUG, format="%(asctime)s;%(levelname)s;%(message)s")
     flh = logging.FileHandler(Config.log_file, "w")
@@ -113,20 +118,16 @@ if __name__ == '__main__':
 	Config.log.error("Unable to connect to Nidan controller %s"%(Config.server_url));
 	sys.exit(2)
 
-    # Daemonize...
-    if Config.daemonize == 1:
-	context = daemon.DaemonContext(
-	    pidfile=lockfile.FileLock(Config.pid_file)
-	)
+    threads = []
 
-	with context:
-	    Nidan()
-    # ...or not !
-    else:
-	NidanLoop()
+    while Config.is_run:
+	for cnt in range(1,Config.threads_max):
+	    t = scannerThread("scannerThread-%c"%cnt)
+	    t.start()
+    
+	    threads.append(t)
 
-        schedule.every(1).minutes.do(NidanLoop)
+	for t in threads:
+    	    t.join()
 
-	while is_run:
-	    schedule.run_pending()
-	    time.sleep(1)
+	time.sleep(Config.sleep_time)

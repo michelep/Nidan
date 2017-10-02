@@ -1,4 +1,12 @@
-0.0.1rc7 -28 Sep 2017
+0.0.1rc8 - 02 Oct 2017
+* [Web Gui] Fix notification and some other minor bugs
+* [Web Gui] Added cleanup for old events
+* [Web Gui] Fix some bugs in users management
+* [Agent] Added multithreading parallel scanning (define threads_max in config file)
+* [Agent] Removed daemonizing support, because of signaling issue
+* [DB] Added new fields in Config and JobsQueue tables
+
+0.0.1rc7 - 28 Sep 2017
 * [Web Gui] Fixed some minor bugs
 * [Web Gui] Some improvements in installer
 * [Web Gui] Added "send test e-mail" in configuration page

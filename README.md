@@ -18,7 +18,7 @@ Nidan agent can be run also as non-privileged users, but scanning tecniques will
 ## Prerequisites 
 
 For Web frontend and REST server:
-* PHP 5.x
+* PHP 5.x or 7.x
 * Apache 2.4.x
 * MySQL 5.x or MariaDB
 
@@ -120,11 +120,12 @@ First, add a new Agent from "Agents" page and write down/copy API key. Now you c
 then copy nidan.cfg file to /etc/nidan/nidan.cfg or ~/.nidan.cfg. Then edit the file and fill apiKey field with API key:
 
     [Agent]
-    apiKey=*[this agent API key]*
-    serverUrl=*[URL of the server - i.e. https://localhost/rest]*
-    PIDfile=/tmp/nid_agent.pid
-    LOGfile=/var/log/nidan.log
-    daemonize=0
+    api_key=*[this agent API key]*
+    server_url=*[URL of the server - i.e. https://localhost/rest]*
+    pid_file=/tmp/nid_agent.pid
+    log_file=/var/log/nidan.log
+    threads_max=5
+    sleep_time=10
 
 remember to change serverUrl if needed ! Then save and run nidan.py
 
@@ -155,4 +156,3 @@ Nidan was written by Michele <o-zone@zerozone.it> Pinassi
 ## License
 
 Nidan is under MIT license. No any warranty. Please use responsibly.
-

@@ -175,6 +175,8 @@ if($mySession->isLogged()) {
 		    echo "ACL enabled";
 		}
 	    }
+	} else {
+	    echo "Sorry, you can't do this";
 	}
     }
 
@@ -228,16 +230,37 @@ if($mySession->isLogged()) {
 		<span class='form-group-addon'>User rights</span>
 		<div class='btn-group' data-toggle='buttons'>";
 	    foreach(array_keys($CFG["defaultUserAcl"]) as $ACL) {
-		echo "<label class='btn btn-success'>
-		    <input name='acl_$ACL' type='checkbox' ".(($tmpUser->getACL($ACL)) ? "checked":"")." autocomplete='off'> $ACL
-		</label>";
+		echo "<label class='btn btn-success'>";
+		if(isset($user_id)) {
+		    echo "<input name='acl_$ACL' type='checkbox' ".(($tmpUser->getACL($ACL)) ? "checked":"")." autocomplete='off'> $ACL";
+		} else {
+		    echo "<input name='acl_$ACL' type='checkbox' autocomplete='off'> $ACL";
+		}
+		echo "</label>";
 	    }
 	    echo "</div>
-	    </div><div class='form-group'>
-		<input type='checkbox' name='reset_password' ".isChecked(!$user_id)."> Reset and send new password
-	        <p class='help-block'>If checked, password will be reset and sent via mail to the user</p>
-	    </form>";
+	    </div>";
+	    if(isset($user_id)) {
+		echo "<div class='form-group'>
+		    <input type='checkbox' name='reset_password' ".isChecked($user_id)."> Reset and send new password
+		    <p class='help-block'>If checked, password will be reset and sent via mail to the user</p>
+		</div>";
+	    } else {
+		echo "<p class='help-block'>New user password will be sent via mail to the user's e-mail</p>";
+	    }
+	    echo "</form>";
 	}
+    }
+
+    /* ===========================================
+    Add or edit TRIGGER
+    =========================================== */
+    if($ajax_action == "trigger_clear") {
+	if(isset($_GET["id"])) {
+	    $trigger_id = intval($_GET["id"]);
+	    doQuery("UPDATE Triggers SET raisedCount=0 WHERE ID='$trigger_id';");
+	}
+	echo "Counter cleared !";
     }
 
     /* ===========================================
@@ -246,7 +269,6 @@ if($mySession->isLogged()) {
     if($ajax_action == "trigger_edit") {
 	if(isset($_GET["id"])) {
 	    $trigger_id = intval($_GET["id"]);
-
 	    $result = doQuery("SELECT Event,agentId,Action,Priority,Args,isEnable FROM Triggers WHERE userId='$mySession->userId' AND ID='$trigger_id';");
 	    if(mysqli_num_rows($result) > 0) {
 		$row = mysqli_fetch_array($result,MYSQLI_ASSOC);
@@ -369,7 +391,7 @@ if($mySession->isLogged()) {
 	$offset = intval($_GET["offset"]);
 	$limit = intval($_GET["limit"]);
 
-	$result = doQuery("SELECT Job,itemId,agentId,Args,addDate,startDate,endDate,timeElapsed FROM JobsQueue ORDER BY addDate $order_by LIMIT $limit OFFSET $offset;");
+	$result = doQuery("SELECT Job,itemId,agentId,Args,scheduleDate,startDate,endDate,timeElapsed FROM JobsQueue ORDER BY addDate $order_by LIMIT $limit OFFSET $offset;");
 	if(mysqli_num_rows($result) > 0) {
 	    $ret_array = array("total" => $total_rows);
 
@@ -379,7 +401,7 @@ if($mySession->isLogged()) {
 		$job_id = $row["itemId"];
 		$job_agent_id = ($row["agentId"] ? $row["agentId"] : "Any");
 
-		$job_adddate = new DateTime($row["addDate"]);
+		$job_scheduledate = new DateTime($row["scheduleDate"]);
 
 		$job_startdate = false;
 		if($row["startDate"]) {
@@ -393,7 +415,7 @@ if($mySession->isLogged()) {
 
 		$job_timeelapsed = $row["timeElapsed"];
 
-		$ret_array["rows"][] = array("job" => $job_method, "id" => $job_id, "agent_id" => $job_agent_id, "add_date" => $job_adddate->format("H:i:s d-M-Y"), "start_date" => ($job_startdate ? $job_startdate->format("H:i:s d-M-Y") : "Not yet"), "end_date" => ($job_enddate ? $job_enddate->format("H:i:s d-M-Y") : "Not yet"), "time_elapsed" => $job_timeelapsed);
+		$ret_array["rows"][] = array("job" => $job_method, "id" => $job_id, "agent_id" => $job_agent_id, "schedule_date" => $job_scheduledate->format("H:i:s d-M-Y"), "start_date" => ($job_startdate ? $job_startdate->format("H:i:s d-M-Y") : "Not yet"), "end_date" => ($job_enddate ? $job_enddate->format("H:i:s d-M-Y") : "Not yet"), "time_elapsed" => $job_timeelapsed);
 	    }
 	    header('Content-Type: application/json');
 	    $json = json_encode($ret_array);

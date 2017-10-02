@@ -19,6 +19,10 @@ $CFG["defaultUserAcl"] = array(
     'manageAgents' => true,
     'manageTriggers' => true,
 );
+
+$CFG["defaultNetworkPrefs"] = array(
+    'scanHosts' => true,
+);
 // ============================
 
 // ============================ PHPConsole
@@ -43,7 +47,7 @@ if(empty($sessionId)) {
 
 // ============================ DBMS 
 
-define("DB_VERSION","0.0.1pre6");
+define("DB_VERSION","0.0.1rc8");
 
 $DB = OpenDB();
 if($DB==false) {
@@ -71,7 +75,7 @@ if(!empty($post_action)) {
 	$auth_email = mysqli_real_escape_string($DB,sanitize($_POST["email"]));
 	$auth_password = mysqli_real_escape_string($DB,sanitize($_POST["password"]));
 
-	$result = doQuery("SELECT ID FROM Users WHERE Name='$auth_email' AND Password=PASSWORD('$auth_password');");
+	$result = doQuery("SELECT ID FROM Users WHERE (eMail='$auth_email' OR Name='$auth_email') AND Password=PASSWORD('$auth_password');");
 	if(mysqli_num_rows($result) > 0) {
 	    $row = mysqli_fetch_array($result,MYSQLI_ASSOC);
 
@@ -121,22 +125,29 @@ if(!empty($post_action)) {
 	        $user_email = mysqli_real_escape_string($DB,sanitize($_POST["user_email"]));
 		$user_name = mysqli_real_escape_string($DB,sanitize($_POST["user_name"]));
 	        $user_alias = mysqli_real_escape_string($DB,sanitize($_POST["user_alias"]));
+
+		$user_password = APG(5);
 		
 		if($user_id > 0) {
 		    // Update existing account
 		    doQuery("UPDATE Users SET Name='$user_name',eMail='$user_email',Alias='$user_alias' WHERE ID='$user_id';");
 		    $mySession->sendMessage("User $user_id updated successfully !");
-		    LOGWrite("User $user_id updated",LOG_DEBUG);
+		    LOGWrite("User $user_name updated",LOG_DEBUG);
 		} else {
 		    // Create new
-		    doQuery("INSERT INTO Users(Name,eMail,Alias,addDate) VALUES ('$user_name','$user_email','$user_alias',NOW());");
+		    doQuery("INSERT INTO Users(Name,eMail,Password,Alias,addDate) VALUES ('$user_name','$user_email',PASSWORD('$user_password'),'$user_alias',NOW());");
 		    $mySession->sendMessage("User $user_id created successfully !");
 		    $user_id = mysqli_insert_id($DB);
+		    // Send mail
+		    $msg = "Dear $user_name,<br/>now you can login on Nidan using the following credentials<br/><br/>username: $user_name<br/>password: $user_password<br/><br/>Have fun!";
+		    sendMail($user_email, $user_name, "Welcome to Nidan",$msg);
+		    //
+		    LOGWrite("New user $user_name created successfully",LOG_DEBUG);
 	        }
 		
 		$tmpUser = new User($user_id);
 		foreach(array_keys($CFG["defaultUserAcl"]) as $ACL) {
-		    if($_POST["acl_".$ACL] == "on") {
+		    if(isset($_POST["acl_".$ACL]) and ($_POST["acl_".$ACL] == "on")) {
 			$tmpUser->setACL($ACL,true);
 		    } else {
 			$tmpUser->setACL($ACL,false);
@@ -144,10 +155,12 @@ if(!empty($post_action)) {
 		}
 
 		if($_POST["reset_password"] == "on") {
-		    $user_password = APG(5);
-		    doQuery("UPDATE Users SET 'Password'=PASSWORD('$user_password') WHERE ID='$user_id';");
+		    doQuery("UPDATE Users SET Password=PASSWORD('$user_password') WHERE ID='$user_id';");
 		    // Send e-mail with new password
-		    sendMail($tmpUser->eMail, $tmpuser->name, "Nidan password", "Password for user $tmpUser->name is $user_password");
+		    $msg = "Dear $tmpUser->name,<br/> your new password is $user_password<br/><br/>Have fun!";
+		    sendMail($tmpUser->eMail, $tmpUser->name, "Nidan password",$msg);
+		    //
+		    LOGWrite("Password reset for user $user_name",LOG_DEBUG);
 		}
 	    }
 	}
@@ -575,7 +588,6 @@ class User {
 	foreach($CFG["defaultUserAcl"] as $name => $value) {
 	    $this->ACL[$name] = $value;
 	}
-
     }
 
     function getName() {
@@ -605,6 +617,7 @@ class Network {
     var $isEnable;
     var $agentId;
     var $scanTime;
+    var $scanPrefs;
     var $addDate;
     var $lastCheck;
     var $chgDate;
@@ -612,7 +625,7 @@ class Network {
 
     function __construct($id=false) {
 	if($id) {
-	    $result = doQuery("SELECT ID,Network,(SELECT COUNT(ID) FROM Hosts WHERE netId=Networks.ID) AS HostsCount,Description,agentId,isEnable,addDate,lastCheck,scanTime,checkCycle FROM Networks WHERE ID='$id';");
+	    $result = doQuery("SELECT ID,Network,(SELECT COUNT(ID) FROM Hosts WHERE netId=Networks.ID) AS HostsCount,Description,Prefs,agentId,isEnable,addDate,lastCheck,scanTime,checkCycle FROM Networks WHERE ID='$id';");
 	    if(mysqli_num_rows($result) > 0) {
 		$row = mysqli_fetch_array($result,MYSQLI_ASSOC);
 		$this->id = $row["ID"];
@@ -624,6 +637,17 @@ class Network {
     		$this->lastCheck = new DateTime($row["lastCheck"]);
     		$this->checkCycle = $row["checkCycle"];
 		$this->scanTime = $row["scanTime"];
+
+		foreach($CFG["defaultNetworksPrefs"] as $name => $value) {
+		    $this->scanPrefs[$name] = $value;
+		}
+
+		if(!empty($row["Prefs"])) {
+		    foreach(unserialize(stripslashes($row["scanPrefs"])) as $key => $value) {
+	    		$this->scanPrefs[$key] = $value;
+		    }
+		}
+
 		return $id;
 	    } else {
 		return false;
@@ -734,8 +758,13 @@ class Job {
 	}
     }
 
-    function schedule() {
+    function schedule($schedule_date=FALSE) {
 	global $DB;
+
+	if(!$schedule_date) {
+	    // If schedule_date not specified, do job ASAP
+	    $schedule_date = "NOW()";
+	}
 
 	/* Before, check of there's another active job like this in queue.... */
 	$result = doQuery("SELECT ID FROM JobsQueue WHERE Job='$this->job' AND itemId='$this->itemId' AND agentId='$this->agentId' AND endDate IS NULL;");
@@ -743,7 +772,7 @@ class Job {
 	    /* Job already in queue... do not add ! */
 	    return false;
 	} else {
-	    doQuery("INSERT INTO JobsQueue(Job,itemId,agentId,Args,addDate) VALUES ('$this->job','$this->itemId','$this->agentId','$this->args',NOW());");
+	    doQuery("INSERT INTO JobsQueue(Job,itemId,agentId,Args,scheduleDate,addDate) VALUES ('$this->job','$this->itemId','$this->agentId','$this->args',$schedule_date,NOW());");
 	    $this->id = mysqli_insert_id($DB);
 	    return $this->id;
 	}
@@ -817,7 +846,7 @@ class Agent {
 
     function getNextJob() {
 	/* First check if there are jobs for this agent... */
-	$result = doQuery("SELECT ID FROM JobsQueue WHERE startDate IS NULL AND endDate IS NULL AND (agentId='$this->id' OR agentId=0) ORDER BY addDate LIMIT 1;");
+	$result = doQuery("SELECT ID FROM JobsQueue WHERE NOW() > scheduleDate AND startDate IS NULL AND endDate IS NULL AND (agentId='$this->id' OR agentId=0) ORDER BY addDate LIMIT 1;");
 	if(mysqli_num_rows($result) > 0) {
 	    $row = mysqli_fetch_array($result,MYSQLI_ASSOC);
 	    $job_id = $row["ID"];

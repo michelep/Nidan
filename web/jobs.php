@@ -29,7 +29,7 @@ include_once "common_sidebar.php";
 		<th data-field="job">Job</th>
 		<th data-field="id" data-sortable="true">ID</th>
 		<th data-field="agent_id" data-sortable="true">Agent ID</th>
-		<th data-field="add_date" data-sortable="true">Added on</th>
+		<th data-field="schedule_date" data-sortable="true">Scheduled</th>
 		<th data-field="start_date" data-sortable="true">Start Date</th>
 		<th data-field="end_date" data-sortable="true">End Date</th>
 		<th data-field="time_elapsed" data-sortable="true">Time Elapsed</th>

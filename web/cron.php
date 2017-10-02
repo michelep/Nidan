@@ -63,6 +63,14 @@ if(mysqli_num_rows($result) > 0) {
 }
 
 //
+// Clean up old events...
+//
+$event_keep = $myConfig->get("event_keep");
+if($event_keep > 0) {
+    doQuery("DELETE FROM EventsLog WHERE TIMESTAMPDIFF(MINUTE,addDate,NOW()) > $event_keep;");
+}
+
+//
 // Process triggers and new events...
 //
 $result = doQuery("SELECT agentId,jobId,Event,Args,addDate,TIMESTAMPDIFF(MINUTE,addDate,NOW()) AS ETA FROM EventsLog;");
@@ -76,7 +84,7 @@ if(mysqli_num_rows($result) > 0) {
 	$adddate = new DateTime($row["addDate"]);
 
 	// Check matching trigger(s)
-	$result_2 = doQuery("SELECT ID,Action,Priority,Args,userId FROM Triggers WHERE ((lastProcessed IS NULL) OR ('".$adddate->format('Y-m-d H:i:s')."' > lastProcessed)) && (Event LIKE '$event') AND (agentId IS NULL OR agentId='$agent_id');");
+	$result_2 = doQuery("SELECT ID,Action,Priority,Args,userId FROM Triggers WHERE ((lastProcessed IS NULL) OR (TIMESTAMPDIFF(SECOND,lastProcessed,'".$adddate->format('Y-m-d H:i:s')."') > 0)) && (Event LIKE '$event') AND (agentId IS NULL OR agentId='$agent_id');");
 	if(mysqli_num_rows($result_2) > 0) {
 	    // Triggered !
 	    while($row = mysqli_fetch_array($result_2,MYSQLI_ASSOC)) {
@@ -87,15 +95,15 @@ if(mysqli_num_rows($result) > 0) {
 
 		$tmpUser = new User($row["userId"]);
 
-		LOGWrite("TRIGGERed($trigger_id) action $event for user $tmpUser->Name");
+		LOGWrite("TRIGGERed($trigger_id) action $event for user $tmpUser->name",LOG_NOTICE);
 
 		doQuery("UPDATE Triggers SET lastRaised=NOW(),raisedCount=raisedCount+1,lastProcessed=NOW() WHERE ID='$trigger_id';");
 
 		switch($trigger_action) {
 		    case 'sendmail':
 			// Compose mail body
-			$msg = "Dear $tmpUser->Name,\nas you requested, a new event '$event' was triggered by Agent Id $agent_id";
-			sendMail($trigger_args,$tmpUser->Name,"EVENT TRIGGERED - $event",$msg);
+			$msg = "Dear $tmpUser->name,\nas you requested, a new event '$event' was triggered by Agent Id $agent_id";
+			sendMail($trigger_args,$tmpUser->name,"EVENT TRIGGERED - $event",$msg);
 			break;
 		    case '4bl.it':
 			// Send via 4bl.it to Telegram Channel

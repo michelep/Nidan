@@ -21,7 +21,7 @@ $(function (){
         var url = this.href;
         var title = this.title;
         // show a spinner or something via css
-        var dialog = $("<div style=\"display:none\" class=\"loading\"><img src=\"/img/spinner.gif\"> loading...</div>").appendTo("body");
+        var dialog = $("<div style='display:none' class='loading'><i class='fa fa-refresh fa-spin fa-3x fa-fw'></i><span class='sr-only'>Loading...</span></div>").appendTo("body");
         // open the dialog
         dialog.dialog({
     	    open: function(event, ui) {
