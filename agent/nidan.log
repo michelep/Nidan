@@ -5497,3 +5497,255 @@ port: 8193	state: open	banner:
 Banner error: timed out
 port: 8194	state: open	banner: None
 Scan END in 86 secs
+Protocol : tcp
+Banner error: timed out
+port: 80	state: open	banner: None
+Banner error: timed out
+port: 443	state: open	banner: None
+Scan END in 348 secs
+Starting JOB 20622...
+Start scanning of host 172.16.68.173 with 
+Starting JOB 20623...
+Start scanning of host 172.16.48.214 with 
+Starting JOB 20624...
+Start scanning of host 172.16.13.202 with 
+Starting JOB 20625...
+Start scanning of host 172.16.68.195 with 
+Protocol : tcp
+Scan END in 3 secs
+Scan END in 3 secs
+Scan END in 3 secs
+Banner error: timed out
+port: 135	state: open	banner: None
+Banner error: timed out
+port: 139	state: open	banner: None
+Banner error: timed out
+port: 445	state: open	banner: None
+Banner error: timed out
+port: 3389	state: open	banner: None
+Banner error: timed out
+port: 5800	state: open	banner: None
+port: 5900	state: open	banner: RFB 003.008
+
+port: 8192	state: open	banner: IOR:010000002600000049444c3a536f70686f734d6573736167696e672f4d657373616765526f757465723a312e300000000100000000000000a4000000010102000e0000003137322e31362e31332e3230320001204100000014010f004e5550000000210000000001000000526f6f74504f4100526f7574657250657273697374656e740003000000010000004d657373616765526f757465720000000300000000000000080000000100aa00004f415401000000180000000100aa00010001000100000001000105090101000000000014000000080000000100a60086000220
+port: 8193	state: open	banner: 
+Banner error: timed out
+port: 8194	state: open	banner: None
+Banner error: timed out
+port: 49152	state: open	banner: None
+Banner error: timed out
+port: 49153	state: open	banner: None
+Banner error: timed out
+port: 49154	state: open	banner: None
+Banner error: timed out
+port: 49155	state: open	banner: None
+Scan END in 56 secs
+Starting JOB 20626...
+Start scanning of host 172.16.48.237 with 
+Starting JOB 20627...
+Start scanning of host 172.16.13.27 with 
+Starting JOB 20620...
+Start scanning of host 172.16.48.1 with 
+Starting JOB 20629...
+Start scanning of host 172.16.13.44 with 
+Protocol : tcp
+port: 25	state: open	banner: 220 [172.16.13.44] ESMTP Ready
+
+Scan END in 3 secs
+Scan END in 3 secs
+Banner error: timed out
+port: 80	state: open	banner: None
+Protocol : tcp
+port: 23	state: open	banner: ÿûÿûÿýÿý
+Banner error: timed out
+port: 443	state: open	banner: None
+Banner error: timed out
+port: 80	state: open	banner: None
+Scan END in 12 secs
+Banner error: timed out
+port: 515	state: open	banner: None
+Banner error: timed out
+port: 8000	state: open	banner: None
+Banner error: timed out
+port: 8443	state: open	banner: None
+Banner error: timed out
+port: 9002	state: open	banner: None
+Banner error: timed out
+port: 9011	state: open	banner: None
+Banner error: timed out
+port: 9100	state: open	banner: None
+Scan END in 42 secs
+Starting JOB 20630...
+Start scanning of host 172.16.68.222 with 
+Starting JOB 20631...
+Start scanning of host 172.16.48.6 with 
+Starting JOB 20632...
+Start scanning of host 172.16.13.49 with 
+Starting JOB 20633...
+Start scanning of host 172.16.68.228 with 
+Protocol : tcp
+Protocol : tcp
+port: 23	state: open	banner: ÿý
+Scan END in 3 secs
+Scan END in 3 secs
+port: 80	state: open	banner: 
+Banner error: timed out
+port: 80	state: open	banner: None
+Scan END in 7 secs
+Banner error: timed out
+port: 427	state: open	banner: None
+Banner error: timed out
+port: 443	state: open	banner: None
+Banner error: timed out
+port: 515	state: open	banner: None
+port: 631	state: open	banner: 
+port: 1124	state: open	banner: 
+port: 2000	state: open	banner:  
+port: 4000	state: open	banner: ”
+port: 5200	state: open	banner: 
+Banner error: timed out
+port: 8080	state: open	banner: None
+Banner error: timed out
+port: 8180	state: filtered	banner: None
+Banner error: timed out
+port: 9100	state: open	banner: None
+Scan END in 47 secs
+Starting JOB 20634...
+Start scanning of host 172.16.48.87 with 
+Starting JOB 20635...
+Start scanning of host 172.16.13.69 with 
+Starting JOB 20636...
+Start scanning of host 172.16.68.3 with 
+Starting JOB 20637...
+Start scanning of host 172.16.49.110 with 
+Protocol : tcp
+Scan END in 3 secs
+Scan END in 3 secs
+Protocol : tcp
+Banner error: timed out
+port: 135	state: open	banner: None
+Banner error: timed out
+port: 80	state: open	banner: None
+Banner error: timed out
+port: 139	state: open	banner: None
+Banner error: timed out
+port: 443	state: open	banner: None
+Scan END in 14 secs
+Banner error: timed out
+port: 445	state: open	banner: None
+Banner error: timed out
+port: 3389	state: open	banner: None
+Banner error: timed out
+port: 5800	state: open	banner: None
+port: 5900	state: open	banner: RFB 003.008
+
+port: 8192	state: open	banner: IOR:010000002600000049444c3a536f70686f734d6573736167696e672f4d657373616765526f757465723a312e300000000100000000000000a4000000010102000d0000003137322e31362e31332e3639000001204100000014010f004e5550000000210000000001000000526f6f74504f4100526f7574657250657273697374656e740003000000010000004d657373616765526f7574657200000003000000000000000800000001009a00004f4154010000001800000001009a00010001000100000001000105090101000000000014000000080000000100a60086000220
+port: 8193	state: open	banner: 
+Banner error: timed out
+port: 8194	state: open	banner: None
+Banner error: timed out
+port: 49152	state: open	banner: None
+Banner error: timed out
+port: 49153	state: open	banner: None
+Banner error: timed out
+port: 49154	state: open	banner: None
+Banner error: timed out
+port: 49155	state: open	banner: None
+Scan END in 55 secs
+Starting JOB 20638...
+Start scanning of host 172.16.13.71 with 
+Starting JOB 20639...
+Start scanning of host 172.16.68.4 with 
+Starting JOB 20640...
+Start scanning of host 172.16.64.1 with 
+Starting JOB 20641...
+Start scanning of host 172.16.49.12 with 
+Protocol : tcp
+port: 23	state: open	banner: ÿûÿûÿýÿý
+Protocol : tcp
+port: 21	state: open	banner: 220 ET0021B7741913 Lexmark E260dn FTP Server NR.APS.N449 ready.
+
+Protocol : tcp
+port: 23	state: open	banner: [20;1H
+[?25h[20;11H[21;1HSession Terminated, Connect again
+[?25h[21;1H
+Protocol : tcp
+port: 23	state: open	banner: [20;1H
+[?25h[20;11H[21;1HSession Terminated, Connect again
+[?25h[21;1H
+Banner error: timed out
+port: 80	state: open	banner: None
+Scan END in 5 secs
+Banner error: timed out
+port: 79	state: open	banner: None
+Banner error: timed out
+port: 80	state: open	banner: None
+Banner error: timed out
+port: 80	state: open	banner: None
+Scan END in 10 secs
+Banner error: timed out
+port: 80	state: open	banner: None
+Banner error: timed out
+port: 280	state: open	banner: None
+Scan END in 14 secs
+Banner error: timed out
+port: 515	state: open	banner: None
+Banner error: timed out
+port: 631	state: open	banner: None
+Banner error: timed out
+port: 5000	state: open	banner: None
+port: 5001	state: open	banner: 
+Banner error: timed out
+port: 6100	state: open	banner: None
+Banner error: timed out
+port: 8000	state: open	banner: None
+port: 9000	state: open	banner: ÿûÿý
+Banner error: timed out
+port: 9100	state: open	banner: None
+port: 9200	state: open	banner:     Lexmark E260dn 
+Banner error: timed out
+port: 9500	state: open	banner: None
+port: 10000	state: open	banner: LXK: 
+Scan END in 53 secs
+Starting JOB 20642...
+Start scanning of host 172.16.13.85 with 
+Starting JOB 20643...
+Start scanning of host 172.16.68.43 with 
+Protocol : tcp
+Starting JOB 20628...
+Start scanning of host 172.16.48.3 with 
+Starting JOB 20645...
+Start scanning of host 172.16.68.57 with 
+port: 21	state: open	banner: 220 NASFTPD Turbo station 1.3.5a Server (ProFTPD)
+
+port: 22	state: open	banner: SSH-2.0-OpenSSH_7.3
+
+Scan END in 3 secs
+Protocol : tcp
+port: 23	state: open	banner: [20;1H
+[?25h[20;11H[21;1HSession Terminated, Connect again
+[?25h[21;1H
+Protocol : tcp
+port: 23	state: open	banner: [20;1H
+[?25h[20;11H[21;1HSession Terminated, Connect again
+[?25h[21;1H
+Banner error: timed out
+port: 80	state: open	banner: None
+Banner error: timed out
+port: 80	state: open	banner: None
+Scan END in 9 secs
+Banner error: timed out
+port: 80	state: open	banner: None
+Scan END in 10 secs
+Banner error: timed out
+port: 111	state: open	banner: None
+Banner error: timed out
+port: 139	state: open	banner: None
+Banner error: timed out
+port: 443	state: open	banner: None
+Banner error: timed out
+port: 445	state: open	banner: None
+Banner error: timed out
+port: 631	state: open	banner: None
+port: 873	state: open	banner: @RSYNCD: 30.0
+

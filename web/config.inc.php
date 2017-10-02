@@ -10,6 +10,9 @@ $CFG["db_port"] = "3306";
 $CFG["db_user"] = "nidan";
 $CFG["db_password"] = "nidan";
 $CFG["db_name"] = "nidan";
+
+$CFG["check_updates"] = true;
+
 // -----------------------------------
 
 ?>

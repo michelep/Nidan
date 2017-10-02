@@ -13,13 +13,32 @@ include_once "common_sidebar.php";
 ?>
 <main class="col-sm-9 offset-sm-3 col-md-10 offset-md-2 pt-3" id="contentDiv">
 <?php
-// Check release
-$db_version = $myConfig->get("db_version");
-if(strcasecmp(DB_VERSION,$db_version) != 0) {
+// Check consistency
+$version = $myConfig->get("version");
+if(strcasecmp(VERSION,$version) != 0) {
     echo "<div class='alert alert-danger' role='alert'>
-	 <strong>Version mismatch !</strong> Your DB version ($db_version) doesn't match required version (".DB_VERSION."). Please run <a href='/install'>install script</a> to check and upgrade, if needed
+	 <strong>Version mismatch !</strong> Your release ".VERSION." doesn't match database release ($version). Please run <a href='/install'>install script</a> to check and upgrade, if needed.
     </div>";
 }
+
+// Check for updates, if TRUE
+if($CFG["check_updates"]) {
+    $url = 'https://raw.githubusercontent.com/michelep/Nidan/master/version.xml'; 
+    $xml = simpleXML_load_file($url,"SimpleXMLElement",LIBXML_NOCDATA); 
+    if($xml === FALSE) { 
+	// Error...
+    } else {
+	if(strncasecmp(VERSION,$xml["version"]) != 0) {
+	    echo "<div class='alert alert-warning' role='alert'>
+		 <strong>A new release available !</strong> Nidan ".$xml["version"]." was released: ".$xml["note"].". Update from <a href='https://github.com/michelep/Nidan'>repository</a>
+	    </div>";
+	}
+	// print_r($xml);
+	// SimpleXMLElement Object ( [version] => 0.0.1rc8 [reldate] => 2017-10-02 [priority] => HIGH [note] => Lot of bugs fixed, minor changes in DB schema, funcionality added )
+    }
+}
+
+
 ?>
     <div class="row">
         <div class="col-lg-3 col-md-6">

@@ -2,6 +2,7 @@
 * [Web Gui] Fix notification and some other minor bugs
 * [Web Gui] Added cleanup for old events
 * [Web Gui] Fix some bugs in users management
+* [Web Gui] Version check 
 * [Agent] Added multithreading parallel scanning (define threads_max in config file)
 * [Agent] Removed daemonizing support, because of signaling issue
 * [DB] Added new fields in Config and JobsQueue tables

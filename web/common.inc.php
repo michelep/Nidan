@@ -1,5 +1,11 @@
 <?php
 
+// ============================ VERSIONING 
+
+define("VERSION","0.0.1rc8");
+
+// ============================
+
 use PHPMailer\PHPMailer\PHPMailer;
 
 require_once __DIR__."/phpmailer/PHPMailer.php";
@@ -45,9 +51,7 @@ if(empty($sessionId)) {
 
 // ===========================
 
-// ============================ DBMS 
-
-define("DB_VERSION","0.0.1rc8");
+// ============================ DBMS
 
 $DB = OpenDB();
 if($DB==false) {

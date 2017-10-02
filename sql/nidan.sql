@@ -3,7 +3,7 @@
 -- http://www.phpmyadmin.net
 --
 -- Host: localhost
--- Creato il: Set 25, 2017 alle 13:52
+-- Creato il: Ott 02, 2017 alle 14:23
 -- Versione del server: 10.0.31-MariaDB-0ubuntu0.16.04.2
 -- Versione PHP: 7.0.22-0ubuntu0.16.04.1
 
@@ -60,12 +60,13 @@ CREATE TABLE `Config` (
 --
 
 INSERT INTO `Config` (`Name`, `Value`) VALUES
-('db_version', '0.0.1pre6'),
-('mail_from_mail', 'nidan@localhost'),
+('events_keep', '1440'),
+('mail_from_mail', 'nidan@unisi.it'),
 ('mail_from_name', 'Nidan'),
 ('mail_server_host', 'localhost'),
 ('mail_server_port', '25'),
-('mail_template', '<style>\r\np {\r\n    text-align: justify;\r\n}\r\n\r\ntable { border-collapse: collapse; }\r\nth { border-bottom: 1px solid #CCC; border-top: 1px solid #CCC; background-color: #EEE; padding: 0.5em 0.8em; text-align: center; font-weight:bold; }\r\ntd { border-bottom: 1px solid #CCC;padding: 0.2em 0.8em; }\r\ntd+td { border-left: 1px solid #CCC;text-align: center; }\r\n</style>\r\n<div style=\'padding: 5px;\'>\r\n%body%\r\n</div>\r\n<div style=\'width:100%; border-top: 1px solid #ccc; background-color: #eee; padding: 5px; text-align: center;\'>\r\n<b>Nidan</b>\r\n</div>');
+('mail_template', '<style>\r\np {\r\n    text-align: justify;\r\n}\r\n\r\ntable { border-collapse: collapse; }\r\nth { border-bottom: 1px solid #CCC; border-top: 1px solid #CCC; background-color: #EEE; padding: 0.5em 0.8em; text-align: center; font-weight:bold; }\r\ntd { border-bottom: 1px solid #CCC;padding: 0.2em 0.8em; }\r\ntd+td { border-left: 1px solid #CCC;text-align: center; }\r\n</style>\r\n<div style=\'padding: 5px;\'>\r\n%body%\r\n</div>\r\n<div style=\'width:100%; border-top: 1px solid #ccc; background-color: #eee; padding: 5px; text-align: center;\'>\r\n<b>Nidan</b>\r\n</div>'),
+('version', '0.0.1rc8');
 
 -- --------------------------------------------------------
 
@@ -125,6 +126,7 @@ CREATE TABLE `JobsQueue` (
   `Cache` text,
   `timeElapsed` decimal(10,3) DEFAULT NULL,
   `addDate` datetime NOT NULL,
+  `scheduleDate` datetime DEFAULT NULL,
   `startDate` datetime DEFAULT NULL,
   `endDate` datetime DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
@@ -153,7 +155,7 @@ CREATE TABLE `Networks` (
   `ID` int(11) NOT NULL,
   `Network` varchar(32) NOT NULL,
   `Description` text,
-  `scanPrefs` varchar(32) DEFAULT NULL,
+  `Prefs` text,
   `isEnable` tinyint(1) NOT NULL DEFAULT '0',
   `agentId` int(11) NOT NULL DEFAULT '0',
   `scanTime` int(11) DEFAULT NULL,
@@ -271,7 +273,7 @@ CREATE TABLE `Users` (
 --
 
 INSERT INTO `Users` (`ID`, `Name`, `Password`, `eMail`, `Alias`, `ACL`, `addDate`, `lastLogin`) VALUES
-(1, 'admin@localhost', '*4ACFE3202A5FF5CF467898FC58AAB1D615029441', NULL, '', 'a:6:{s:8:"canLogin";b:1;s:11:"manageUsers";b:1;s:12:"manageSystem";b:1;s:14:"manageNetworks";b:1;s:12:"manageAgents";b:1;s:14:"manageTriggers";b:1;}', '2017-07-10 16:06:47', '2017-09-25 12:20:35');
+(1, 'admin@localhost', '*4ACFE3202A5FF5CF467898FC58AAB1D615029441', '', '', 'a:6:{s:8:"canLogin";b:1;s:11:"manageUsers";b:1;s:12:"manageSystem";b:1;s:14:"manageNetworks";b:1;s:12:"manageAgents";b:1;s:14:"manageTriggers";b:1;}', '2017-07-10 16:06:47', '2017-10-02 10:48:32'),
 
 --
 -- Indici per le tabelle scaricate
