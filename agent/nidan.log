@@ -6390,3 +6390,90 @@ Protocol : tcp
 Protocol : tcp
 port: 22	state: open	banner: SSH-1.99-OpenSSH_2.9p2
 
+Protocol : tcp
+Banner error: timed out
+port: 7676	state: open	banner: None
+Banner error: timed out
+port: 80	state: open	banner: None
+Banner error: timed out
+port: 80	state: open	banner: None
+Banner error: timed out
+port: 8000	state: open	banner: None
+Banner error: timed out
+port: 139	state: open	banner: None
+Banner error: timed out
+port: 443	state: open	banner: None
+port: 912	state: open	banner: 220 VMware Authentication Daemon Version 1.0, ServerDaemonProtocol:SOAP, MKSDisplayProtocol:VNC , 
+
+Scan END in 15 secs
+Banner error: timed out
+port: 8001	state: open	banner: None
+Banner error: timed out
+port: 443	state: open	banner: None
+Banner error: timed out
+port: 8002	state: open	banner: None
+Banner error: timed out
+port: 515	state: open	banner: None
+Banner error: timed out
+port: 8080	state: open	banner: None
+Banner error: timed out
+port: 8080	state: open	banner: None
+Scan END in 29 secs
+Banner error: timed out
+port: 9999	state: open	banner: None
+Scan END in 31 secs
+Starting JOB 20699...
+Start scanning of host 172.16.17.164 with 
+Starting JOB 20700...
+Start scanning of host 172.16.21.104 with 
+Protocol : tcp
+port: 21	state: open	banner: 220 TASKalfa 4551ci FTP server
+
+Starting JOB 20701...
+Start scanning of host 172.16.17.167 with 
+Starting JOB 20702...
+Start scanning of host 172.16.21.111 with 
+Protocol : tcp
+Protocol : tcp
+Protocol : tcp
+Banner error: timed out
+port: 80	state: open	banner: None
+Banner error: timed out
+port: 80	state: open	banner: None
+Banner error: timed out
+port: 7	state: open	banner: None
+port: 427	state: open	banner: 
+Banner error: timed out
+port: 7	state: open	banner: None
+port: 443	state: open	banner: 
+Banner error: timed out
+port: 139	state: open	banner: None
+Banner error: timed out
+port: 80	state: open	banner: None
+Banner error: timed out
+port: 80	state: open	banner: None
+Banner error: timed out
+port: 515	state: open	banner: None
+Banner error: timed out
+port: 443	state: open	banner: None
+Banner error: timed out
+port: 9100	state: open	banner: None
+Scan END in 17 secs
+Banner error: timed out
+port: 9100	state: open	banner: None
+Banner error: timed out
+port: 631	state: open	banner: None
+Scan END in 18 secs
+Banner error: timed out
+port: 445	state: open	banner: None
+Banner error: timed out
+port: 9100	state: open	banner: None
+Banner error: timed out
+port: 515	state: open	banner: None
+Banner error: timed out
+port: 50003	state: open	banner: None
+Scan END in 29 secs
+Banner error: timed out
+port: 9090	state: open	banner: None
+Banner error: timed out
+port: 9091	state: open	banner: None
