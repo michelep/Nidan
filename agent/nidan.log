@@ -5809,3 +5809,571 @@ Banner error: timed out
 port: 443	state: open	banner: None
 Banner error: timed out
 port: 445	state: open	banner: None
+Banner error: timed out
+port: 631	state: open	banner: None
+port: 873	state: open	banner: @RSYNCD: 30.0
+
+Banner error: timed out
+port: 2049	state: open	banner: None
+Banner error: timed out
+port: 3128	state: open	banner: None
+port: 3493	state: open	banner: 
+Banner error: timed out
+port: 8080	state: open	banner: None
+Banner error: timed out
+port: 8081	state: open	banner: None
+Banner error: timed out
+port: 30000	state: open	banner: None
+Scan END in 58 secs
+Starting JOB 20650...
+Start scanning of host 172.16.13.86 with 
+Starting JOB 20651...
+Starting JOB 20651...
+Start scanning of host 172.16.64.232 with 
+Start scanning of host 172.16.64.232 with 
+Starting JOB 20652...
+Start scanning of host 172.16.68.5 with 
+Protocol : tcp
+port: 23	state: open	banner: ÿý
+Scan END in 3 secs
+Scan END in 3 secs
+Protocol : tcp
+port: 23	state: open	banner: [20;1H
+[?25h[20;11H[21;1HSession Terminated, Connect again
+[?25h[21;1H
+Banner error: timed out
+port: 80	state: open	banner: None
+Scan END in 7 secs
+Banner error: timed out
+port: 80	state: open	banner: None
+Banner error: timed out
+port: 280	state: open	banner: None
+Scan END in 15 secs
+Starting JOB 20653...
+Start scanning of host 172.16.49.252 with 
+Starting JOB 20654...
+Start scanning of host 172.16.13.87 with 
+Starting JOB 20655...
+Start scanning of host 172.16.64.3 with 
+Starting JOB 20656...
+Start scanning of host 172.16.49.253 with 
+Protocol : tcp
+port: 23	state: open	banner: ÿý
+Protocol : tcp
+port: 23	state: open	banner: [20;1H
+[?25h[20;11H[21;1HSession Terminated, Connect again
+[?25h[21;1H
+Protocol : tcp
+port: 23	state: open	banner: ÿý
+Banner error: timed out
+port: 80	state: open	banner: None
+Scan END in 7 secs
+Banner error: timed out
+port: 80	state: open	banner: None
+Banner error: timed out
+port: 80	state: open	banner: None
+Scan END in 10 secs
+Protocol : tcp
+port: 21	state: open	banner: 220 JD FTP Server Ready
+
+port: 23	state: open	banner: ÿü
+Banner error: timed out
+port: 280	state: open	banner: None
+Scan END in 15 secs
+Banner error: timed out
+port: 80	state: open	banner: None
+Banner error: timed out
+port: 280	state: open	banner: None
+Banner error: timed out
+port: 515	state: open	banner: None
+Banner error: timed out
+port: 631	state: open	banner: None
+Banner error: [Errno 104] Connection reset by peer
+port: 5120	state: open	banner: None
+Banner error: timed out
+port: 9100	state: open	banner: None
+Scan END in 39 secs
+Starting JOB 20657...
+Start scanning of host 172.16.13.88 with 
+Starting JOB 20658...
+Start scanning of host 172.16.64.4 with 
+Starting JOB 20659...
+Start scanning of host 172.16.49.254 with 
+Starting JOB 20660...
+Start scanning of host 172.16.13.94 with 
+Protocol : tcp
+port: 21	state: open	banner: 220 FTP print service:V-1.13/Use the network password for the ID if updating.
+
+port: 23	state: open	banner: [2J[1;1f
+port: 25	state: open	banner: 220 Simple Mail Tranfer Service Ready 
+
+Protocol : tcp
+port: 21	state: open	banner: 220 ProFTPD 1.3.0 Server (LaCie Ethernet Disk mini) [172.16.49.254]
+
+Protocol : tcp
+port: 23	state: open	banner: ÿý
+Protocol : tcp
+port: 23	state: open	banner: [20;1H
+[?25h[20;11H[21;1HSession Terminated, Connect again
+[?25h[21;1H
+Banner error: timed out
+port: 80	state: open	banner: None
+Banner error: timed out
+port: 80	state: open	banner: None
+Banner error: timed out
+port: 80	state: open	banner: None
+Banner error: timed out
+port: 80	state: open	banner: None
+Scan END in 10 secs
+Scan END in 10 secs
+Banner error: timed out
+port: 443	state: open	banner: None
+Banner error: timed out
+port: 139	state: open	banner: None
+Banner error: timed out
+port: 515	state: open	banner: None
+Banner error: timed out
+port: 445	state: open	banner: None
+Scan END in 20 secs
+Banner error: timed out
+port: 631	state: open	banner: None
+Banner error: timed out
+port: 9100	state: open	banner: None
+Scan END in 32 secs
+Starting JOB 20661...
+Start scanning of host 172.16.64.68 with 
+Starting JOB 20662...
+Start scanning of host 172.16.64.78 with 
+Starting JOB 20663...
+Start scanning of host 172.16.68.90 with 
+Starting JOB 20664...
+Start scanning of host 172.16.65.109 with 
+Protocol : tcp
+Protocol : tcp
+Protocol : tcp
+port: 23	state: open	banner: [20;1H
+[?25h[20;11H[21;1HSession Terminated, Connect again
+[?25h[21;1H
+Banner error: timed out
+port: 80	state: open	banner: None
+Protocol : tcp
+port: 23	state: open	banner: [20;1H
+[?25h[20;11H[21;1HSession Terminated, Connect again
+[?25h[21;1H
+Banner error: timed out
+port: 135	state: open	banner: None
+Banner error: timed out
+port: 80	state: open	banner: None
+Banner error: timed out
+port: 443	state: open	banner: None
+Banner error: timed out
+port: 80	state: open	banner: None
+Scan END in 11 secs
+Banner error: timed out
+port: 139	state: open	banner: None
+Banner error: timed out
+port: 280	state: open	banner: None
+Scan END in 15 secs
+Banner error: timed out
+port: 515	state: open	banner: None
+Banner error: timed out
+port: 445	state: open	banner: None
+Banner error: timed out
+port: 631	state: open	banner: None
+Banner error: timed out
+port: 3389	state: open	banner: None
+Banner error: timed out
+port: 9100	state: open	banner: None
+Scan END in 26 secs
+Banner error: timed out
+port: 5357	state: open	banner: None
+port: 8192	state: open	banner: IOR:010000002600000049444c3a536f70686f734d6573736167696e672f4d657373616765526f757465723a312e300000000100000000000000a4000000010102000d0000003137322e31362e36382e3930000001204100000014010f004e5550000000210000000001000000526f6f74504f4100526f7574657250657273697374656e740003000000010000004d657373616765526f757465720000000300000000000000080000000100ac00004f415401000000180000000100ac00010001000100000001000105090101000000000014000000080000000100a60086000220
+port: 8193	state: open	banner: 
+Banner error: timed out
+port: 8194	state: open	banner: None
+Banner error: timed out
+port: 49152	state: open	banner: None
+Banner error: timed out
+port: 49153	state: open	banner: None
+Banner error: timed out
+port: 49154	state: open	banner: None
+Banner error: timed out
+port: 49155	state: open	banner: None
+Scan END in 54 secs
+Starting JOB 20665...
+Start scanning of host 172.16.69.22 with 
+Starting JOB 20649...
+Start scanning of host 172.16.49.15 with 
+Starting JOB 20649...
+Start scanning of host 172.16.49.15 with 
+Starting JOB 20667...
+Start scanning of host 172.16.69.25 with 
+Scan END in 3 secs
+Protocol : tcp
+port: 23	state: open	banner: ÿý
+Protocol : tcp
+port: 21	state: open	banner: 220 RICOH Aficio MP 3010 FTP server (5.13) ready.
+
+port: 23	state: open	banner: ÿûÿû
+Protocol : tcp
+port: 23	state: open	banner: ÿý
+Banner error: timed out
+port: 80	state: open	banner: None
+Scan END in 16 secs
+Banner error: timed out
+port: 80	state: open	banner: None
+port: 139	state: open	banner: 
+Banner error: timed out
+port: 80	state: open	banner: None
+Scan END in 19 secs
+Banner error: timed out
+port: 514	state: open	banner: None
+Banner error: timed out
+port: 515	state: open	banner: None
+Banner error: timed out
+port: 631	state: open	banner: None
+Banner error: timed out
+port: 7443	state: open	banner: None
+Banner error: timed out
+port: 9100	state: open	banner: None
+Scan END in 44 secs
+Starting JOB 20668...
+Start scanning of host 172.16.65.145 with 
+Starting JOB 20669...
+Start scanning of host 172.16.69.35 with 
+Protocol : tcp
+port: 22	state: open	banner: SSH-2.0-OpenSSH_7.5p1 Debian-5
+
+Starting JOB 20670...
+Start scanning of host 172.16.65.29 with 
+Starting JOB 20671...
+Start scanning of host 172.16.69.9 with 
+Protocol : tcp
+Scan END in 3 secs
+Protocol : tcp
+port: 23	state: open	banner: ÿýÿý ÿûÿýÿýÿûÿý!
+Banner error: timed out
+port: 111	state: open	banner: None
+Scan END in 5 secs
+Banner error: timed out
+port: 80	state: open	banner: None
+Scan END in 6 secs
+Banner error: timed out
+port: 80	state: open	banner: None
+Banner error: timed out
+port: 443	state: open	banner: None
+Scan END in 14 secs
+Starting JOB 20672...
+Start scanning of host 172.16.70.39 with 
+Starting JOB 20673...
+Start scanning of host 172.16.17.166 with 
+Starting JOB 20674...
+Start scanning of host 172.16.21.11 with 
+Protocol : tcp
+port: 22	state: open	banner: SSH-2.0-dropbear_0.49
+
+Starting JOB 20675...
+Start scanning of host 172.16.21.167 with 
+Protocol : tcp
+Protocol : tcp
+Protocol : tcp
+port: 22	state: open	banner: SSH-1.5-OpenSSH_2.9p1
+
+port: 23	state: open	banner: [20;1H
+[?25h[20;26H[21;1HSession Terminated, Connect again
+[?25h[21;1H
+Banner error: timed out
+port: 80	state: open	banner: None
+Banner error: timed out
+port: 80	state: open	banner: None
+port: 443	state: open	banner: 
+Banner error: timed out
+port: 80	state: open	banner: None
+Scan END in 5 secs
+port: 427	state: open	banner: 
+port: 443	state: open	banner: 
+Banner error: timed out
+port: 80	state: open	banner: None
+Scan END in 10 secs
+Banner error: timed out
+port: 515	state: open	banner: None
+Banner error: timed out
+port: 515	state: open	banner: None
+Banner error: timed out
+port: 631	state: open	banner: None
+Banner error: timed out
+port: 631	state: open	banner: None
+Banner error: timed out
+port: 9100	state: open	banner: None
+Banner error: timed out
+port: 9100	state: open	banner: None
+Banner error: timed out
+port: 50003	state: open	banner: None
+Scan END in 26 secs
+Banner error: timed out
+port: 50003	state: open	banner: None
+Scan END in 29 secs
+Starting JOB 20676...
+Start scanning of host 172.16.21.171 with 
+Protocol : tcp
+Starting JOB 20666...
+Start scanning of host 172.16.69.239 with 
+Starting JOB 20677...
+Start scanning of host 172.16.21.62 with 
+Starting JOB 20679...
+Start scanning of host 172.16.65.33 with 
+Protocol : tcp
+Protocol : tcp
+Scan END in 3 secs
+Banner error: timed out
+port: 80	state: open	banner: None
+Banner error: timed out
+port: 80	state: open	banner: None
+Banner error: timed out
+port: 53	state: open	banner: None
+port: 427	state: open	banner: 
+port: 443	state: open	banner: 
+Banner error: timed out
+port: 80	state: open	banner: None
+Banner error: timed out
+port: 427	state: open	banner: None
+Banner error: timed out
+port: 515	state: open	banner: None
+Banner error: timed out
+port: 88	state: open	banner: None
+Banner error: timed out
+port: 443	state: open	banner: None
+Banner error: timed out
+port: 631	state: open	banner: None
+Banner error: timed out
+port: 135	state: open	banner: None
+Banner error: timed out
+port: 9100	state: open	banner: None
+Banner error: timed out
+port: 50000	state: open	banner: None
+Scan END in 23 secs
+Banner error: timed out
+port: 139	state: open	banner: None
+Banner error: timed out
+port: 50003	state: open	banner: None
+Scan END in 29 secs
+Banner error: timed out
+port: 389	state: open	banner: None
+Banner error: timed out
+port: 445	state: open	banner: None
+Banner error: timed out
+port: 464	state: open	banner: None
+port: 593	state: open	banner: ncacn_http/1.0
+port: 636	state: open	banner: 
+Banner error: timed out
+port: 1026	state: open	banner: None
+port: 1027	state: open	banner: ncacn_http/1.0
+Banner error: timed out
+port: 1046	state: open	banner: None
+Banner error: timed out
+port: 1047	state: open	banner: None
+Banner error: timed out
+port: 3268	state: open	banner: None
+port: 3269	state: open	banner: 
+Banner error: timed out
+port: 3389	state: open	banner: None
+Scan END in 72 secs
+Starting JOB 20680...
+Start scanning of host 172.16.65.35 with 
+Protocol : tcp
+Starting JOB 20681...
+Start scanning of host 172.16.70.2 with 
+Starting JOB 20682...
+Start scanning of host 172.16.65.38 with 
+Protocol : tcp
+port: 22	state: open	banner: SSH-2.0-dropbear_0.52
+
+Starting JOB 20683...
+Start scanning of host 172.16.65.40 with 
+Scan END in 3 secs
+Scan END in 3 secs
+Banner error: timed out
+port: 80	state: open	banner: None
+Banner error: timed out
+port: 80	state: open	banner: None
+Banner error: timed out
+port: 111	state: open	banner: None
+Banner error: timed out
+port: 427	state: open	banner: None
+Banner error: timed out
+port: 139	state: open	banner: None
+Banner error: timed out
+port: 443	state: open	banner: None
+port: 902	state: open	banner: 220 VMware Authentication Daemon Version 1.10: SSL Required, ServerDaemonProtocol:SOAP, MKSDisplayProtocol:VNC , VMXARGS supported
+
+Banner error: timed out
+port: 443	state: open	banner: None
+port: 5989	state: open	banner: 
+Banner error: timed out
+port: 445	state: open	banner: None
+Banner error: timed out
+port: 8000	state: open	banner: None
+Scan END in 28 secs
+Banner error: timed out
+port: 548	state: open	banner: None
+Banner error: timed out
+port: 631	state: open	banner: None
+port: 873	state: open	banner: @RSYNCD: 30.0
+
+Banner error: timed out
+port: 8086	state: open	banner: None
+Banner error: timed out
+port: 8200	state: open	banner: None
+Banner error: timed out
+port: 50000	state: open	banner: None
+Scan END in 53 secs
+Starting JOB 20684...
+Start scanning of host 172.16.65.60 with 
+Starting JOB 20685...
+Start scanning of host 172.16.65.88 with 
+Starting JOB 20686...
+Start scanning of host 172.16.17.1 with 
+Starting JOB 20687...
+Start scanning of host 172.16.17.10 with 
+Protocol : tcp
+Protocol : tcp
+port: 23	state: open	banner: ÿý
+Protocol : tcp
+port: 23	state: open	banner: [20;1H
+[?25h[20;11H[21;1HSession Terminated, Connect again
+[?25h[21;1H
+Protocol : tcp
+port: 80	state: open	banner: 
+Banner error: timed out
+port: 80	state: open	banner: None
+Scan END in 8 secs
+Banner error: timed out
+port: 80	state: open	banner: None
+Scan END in 10 secs
+Banner error: timed out
+port: 548	state: open	banner: None
+Scan END in 11 secs
+Banner error: timed out
+port: 515	state: open	banner: None
+port: 631	state: open	banner: 
+port: 5200	state: open	banner: 
+Banner error: timed out
+port: 9100	state: open	banner: None
+Scan END in 28 secs
+Starting JOB 20688...
+Start scanning of host 172.16.17.122 with 
+Protocol : tcp
+port: 22	state: open	banner: SSH-2.0-dropbear_0.49
+
+Starting JOB 20689...
+Start scanning of host 172.16.17.124 with 
+Starting JOB 20690...
+Start scanning of host 172.16.21.1 with 
+Starting JOB 20690...
+Start scanning of host 172.16.21.1 with 
+Protocol : tcp
+port: 23	state: open	banner: ÿûÿûÿýÿý
+Protocol : tcp
+port: 23	state: open	banner: ÿûÿûÿýÿý
+Protocol : tcp
+port: 23	state: open	banner: [20;1H
+[?25h[20;11H[21;1HSession Terminated, Connect again
+[?25h[21;1H
+Banner error: timed out
+port: 80	state: open	banner: None
+Scan END in 6 secs
+Banner error: timed out
+port: 80	state: open	banner: None
+Banner error: timed out
+port: 80	state: open	banner: None
+Scan END in 6 secs
+Scan END in 6 secs
+Banner error: timed out
+port: 80	state: open	banner: None
+Scan END in 10 secs
+Starting JOB 20691...
+Start scanning of host 172.16.17.13 with 
+Starting JOB 20678...
+Start scanning of host 172.16.65.123 with 
+Starting JOB 20693...
+Start scanning of host 172.16.21.160 with 
+Starting JOB 20694...
+Start scanning of host 172.16.21.175 with 
+Protocol : tcp
+Protocol : tcp
+Scan END in 1 secs
+Protocol : tcp
+Banner error: timed out
+port: 9	state: open	banner: None
+Banner error: timed out
+port: 53	state: open	banner: None
+port: 21	state: open	banner: 220---------- Welcome to Pure-FTPd ----------
+220-You are user number 1 of 8 allowed.
+220-Local time is now 14:35. Server port: 21.
+220 You will be disconnected after 15 minutes of inactivity.
+
+Banner error: timed out
+port: 80	state: open	banner: None
+Banner error: timed out
+port: 88	state: open	banner: None
+Banner error: timed out
+port: 80	state: open	banner: None
+Banner error: timed out
+port: 1801	state: open	banner: None
+Banner error: timed out
+port: 135	state: open	banner: None
+Banner error: timed out
+port: 111	state: open	banner: None
+Banner error: timed out
+port: 2103	state: open	banner: None
+Banner error: timed out
+port: 139	state: open	banner: None
+Banner error: timed out
+port: 139	state: open	banner: None
+Banner error: timed out
+port: 2105	state: open	banner: None
+Banner error: timed out
+port: 389	state: open	banner: None
+Banner error: timed out
+port: 443	state: open	banner: None
+Banner error: timed out
+port: 2107	state: open	banner: None
+Scan END in 30 secs
+Banner error: timed out
+port: 445	state: open	banner: None
+Banner error: timed out
+port: 445	state: open	banner: None
+Banner error: timed out
+port: 464	state: open	banner: None
+port: 593	state: open	banner: ncacn_http/1.0
+port: 636	state: open	banner: 
+Banner error: timed out
+port: 3260	state: open	banner: None
+Banner error: timed out
+port: 1025	state: open	banner: None
+Banner error: timed out
+port: 49152	state: open	banner: None
+port: 1027	state: open	banner: ncacn_http/1.0
+Scan END in 43 secs
+Banner error: timed out
+port: 1046	state: open	banner: None
+Banner error: timed out
+port: 1066	state: open	banner: None
+Banner error: timed out
+port: 1079	state: open	banner: None
+Banner error: timed out
+port: 1092	state: open	banner: None
+Banner error: timed out
+port: 1093	state: open	banner: None
+port: 5405	state: open	banner:   CDL1                   
+Banner error: timed out
+port: 5800	state: open	banner: None
+port: 5900	state: open	banner: RFB 003.008
+
+port: 8192	state: open	banner: IOR:010000002600000049444c3a536f70686f734d6573736167696e672f4d657373616765526f757465723a312e300000000100000000000000a4000000010102000e0000003137322e31362e36352e3132330001204100000014010f004e5550000000210000000001000000526f6f74504f4100526f7574657250657273697374656e740003000000010000004d657373616765526f75746572000000030000000000000008000000012dfa00004f41540100000018000000012dfa0001000100010000000100010509010100000000001400000008000000012da60086000220
+port: 8193	state: open	banner: 
+Banner error: timed out
+port: 8194	state: open	banner: None
+Banner error: timed out
+port: 27000	state: open	banner: None
+Scan END in 86 secs
