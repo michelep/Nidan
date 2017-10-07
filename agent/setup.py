@@ -10,7 +10,7 @@ def read(fname):
 
 setup(
     name = "Nidan Agent",
-    version = "0.0.1rc7",
+    version = "0.0.1rc8",
     author = "Michele Pinassi",
     author_email = "o-zone@zerozone.it",
     description = ("Agent for Nidan network monitoring system"),
