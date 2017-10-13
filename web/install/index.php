@@ -15,7 +15,7 @@ function check_db($host,$port,$user,$password,$name) {
     }
 
     if (!$mysqli->real_connect($host, $user, $password, $name)) {
-        return mysqli_connect_errno();
+        return "Connect Error (".mysqli_connect_errno().") ".mysqli_connect_error();
     }
     return false;
 }
@@ -73,15 +73,9 @@ if(isset($_POST["step"])) {
 	$res = check_db($db_host,$db_port,$db_user,$db_password,$db_name);
 	if($res != false) {
 	    echo "<div class='alert alert-warning'>
-		Error $res
+		$res;
 	    </div>";
-	    switch($res) {
-		case 1049: // No DB "nidan": create db and import database schema
-		    $step = 1;
-		    break;
-		default:
-		    $step = 0;
-	    }
+	    $step = 0;
 	} else {
 	    echo "<div class='alert alert-success'>
 		<strong>Well done!</strong> Successfully connected to the DB. Now check DB structure...
@@ -118,7 +112,7 @@ if(isset($_POST["step"])) {
 		echo "<div class='alert alert-warning'>
 		    <strong>Ooops !</strong> No tables here ? 
 		</div>";
-		$step = 2;
+		$step = 1;
 	    }
 	}
     }
@@ -149,16 +143,10 @@ if($step == 0) {// First step: check DB connection
 		    </div>
 		</form>
 <?php
-} else if ($step == 1) { // Import DB scripts
+} else if ($step == 1) { //
 ?>
-    <p class="h1">2. Create database and tables</p>
-    <form method="POST">
-	<input type="hidden" name="step" value="2">
 
-    </form>
 <?php
-} else if ($step == 2) { // Check tables
-
 }
 ?>
 	    </main>

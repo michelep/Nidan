@@ -73,27 +73,32 @@ if($event_keep > 0) {
 //
 // Process triggers and new events...
 //
-$result = doQuery("SELECT agentId,jobId,Event,Args,addDate,TIMESTAMPDIFF(MINUTE,addDate,NOW()) AS ETA FROM EventsLog;");
+$event_lastid = ($myConfig->get("event_lastid") ? $myConfig->get("event_lastid"):0);
+
+$result = doQuery("SELECT ID,agentId,jobId,Event,Args,addDate,TIMESTAMPDIFF(MINUTE,addDate,NOW()) AS ETA FROM EventsLog WHERE ID > $event_lastid ORDER BY ID;");
 if(mysqli_num_rows($result) > 0) {
     while($row = mysqli_fetch_array($result,MYSQLI_ASSOC)) {
 	$event = stripslashes($row["Event"]);
+	$event_id = $row["ID"];
 	$agent_id = intval($row["agentId"]);
 	$job_id = intval($row["jobId"]);
 	$args = stripslashes($row["Args"]);
 	$eta = intval($row["ETA"]);
-	$adddate = new DateTime($row["addDate"]);
+	$add_date = new DateTime($row["addDate"]);
 
 	// Check matching trigger(s)
-	$result_2 = doQuery("SELECT ID,Action,Priority,Args,userId FROM Triggers WHERE ((lastProcessed IS NULL) OR (TIMESTAMPDIFF(SECOND,lastProcessed,'".$adddate->format('Y-m-d H:i:s')."') > 0)) && (Event LIKE '$event') AND (agentId IS NULL OR agentId='$agent_id');");
-	if(mysqli_num_rows($result_2) > 0) {
+	$triggers = doQuery("SELECT ID,Action,Priority,Args,userId FROM Triggers WHERE (Event LIKE '$event') AND (agentId IS NULL OR agentId='$agent_id');");
+	if(mysqli_num_rows($triggers) > 0) {
 	    // Triggered !
-	    while($row = mysqli_fetch_array($result_2,MYSQLI_ASSOC)) {
+	    while($row = mysqli_fetch_array($triggers,MYSQLI_ASSOC)) {
 		$trigger_id = $row["ID"];
 		$trigger_action = stripslashes($row["Action"]);
 		$trigger_priority = stripslashes($row["Priority"]);
-		$trigger_args = stripslashes($row["Args"]);
+		$trigger_args = json_decode(stripslashes($row["Args"]),true);
 
 		$tmpUser = new User($row["userId"]);
+
+		$tmp_job = new Job($job_id);
 
 		LOGWrite("TRIGGERed($trigger_id) action $event for user $tmpUser->name",LOG_NOTICE);
 
@@ -101,9 +106,21 @@ if(mysqli_num_rows($result) > 0) {
 
 		switch($trigger_action) {
 		    case 'sendmail':
-			// Compose mail body
-			$msg = "Dear $tmpUser->name,\nas you requested, a new event '$event' was triggered by Agent Id $agent_id";
-			sendMail($trigger_args,$tmpUser->name,"EVENT TRIGGERED - $event",$msg);
+			$dest_email = $trigger_args["email"];
+			if(filter_var($dest_email, FILTER_VALIDATE_EMAIL)) {
+			    // Compose mail body
+			    $msg = "Dear $tmpUser->name,<br/>
+			    as you requested, a new event '$event' was triggered for Job $job_id:<br/>
+			    <blockquote>
+				".print_r($tmp_job->args,true)."
+			    </blockquote>
+			    by Agent Id $agent_id:<br/>
+			    <blockquote>
+				".print_r($args,true)."
+			    </blockquote><br/>
+			    Your tireless employee, Nidan<br/>";
+			    sendMail($dest_email,$tmpUser->name,"EVENT TRIGGERED - $event",$msg);
+			}
 			break;
 		    case '4bl.it':
 			// Send via 4bl.it to Telegram Channel
@@ -114,11 +131,13 @@ if(mysqli_num_rows($result) > 0) {
 		}
 	    }
 	}
+	$myConfig->set("event_lastid",$event_id);
     }
 }
-//
-// Cleanup old events
-//
 
+//
+// Update cron lastrun watchdog
+//
+$myConfig->set("cron_lastrun",date(DateTime::ISO8601));
 
 ?>

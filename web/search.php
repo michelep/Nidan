@@ -11,6 +11,8 @@ $query = trim(sanitize($_GET["q"]));
 
 $pageTitle = "Search for '$query'";
 
+$num_res = 0;
+
 include "common_head.php"; 
 
 include_once "common_sidebar.php";
@@ -48,10 +50,11 @@ include_once "common_sidebar.php";
 	    
 	    echo "<tr>
 	        <td><i class='fa $host_status' aria-hidden='true'></i></td>
-	        <td><a href='/host?id=$host_id'>$host_ip</a></td>
+	        <td><a href='/host?id=$host_id'>$host_ip</a> <a href='http://$host_ip' target=_new><i class='fa fa-external-link w-25' aria-hidden='true'></i></a></td>
 	        <td>$host_name</td>
 	        <td>$host_note</td>
 	    </tr>";
+	    $num_res++;
 	}
 ?>
 	</tbody></table>
@@ -91,17 +94,25 @@ include_once "common_sidebar.php";
 		    $service_status = "fa-question-circle";
 		    break;
 	    }
+    
+	    $hostname = ($host->hostname ? $host->hostname:$host->ip);
+
 	    echo "<tr>
 	        <td><i class='fa $service_status' aria-hidden='true'></i></td>
-	        <td><a href='/host?id=$host->id'>$host->hostname</a></td>
+	        <td><a href='/host?id=$host->id'>$hostname</a> <a href='http://$hostname' target=_new><i class='fa fa-external-link w-25' aria-hidden='true'></i></a></td>
 	        <td>$service_port</td>
 	        <td>$service_banner</td>
 	    </tr>";
+	    $num_res++;
 	}
 ?>
 	</tbody></table>
     </div>
 <?php
+	}
+	if($num_res == 0) {
+	    echo "<h2>Oh no !</h2>
+	    <h4>We didn't found anything looking for '$query'</h4>";
 	}
     } else {
 	echo "<h2>Oooops !</h2>

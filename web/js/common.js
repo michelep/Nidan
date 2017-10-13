@@ -13,6 +13,14 @@ function printNotice(text,type) {
     }).show();
 }
 
+// ========================================================================================
+function checkJSON(field, rules, i, options) {
+    try {
+	var c = $.parseJSON(field.val());
+    } catch (err) {
+	return options.allrules.validateJson.alertText+" "+err;
+    }
+}
 
 // ========================================================================================= AJAXDIALOG
 $(function (){

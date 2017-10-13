@@ -333,9 +333,9 @@ if($mySession->isLogged()) {
 		<option value='weekly' ".isSelected('weekly',$trigger_priority).">Weekly</option>
 	    </select>
 	</div><div class='form-group'>
-	    <span class='form-group-addon'>Args (separated by comma)<span>
-	    <input type='text' id='trigger_args' name='trigger_args' class='form-control w-100' value='$trigger_args'>
-	    <p class='help-block'>Action arguments, like email address...</p>
+	    <span class='form-group-addon'>Trigger args<span>
+	    <textarea id='trigger_args' name='trigger_args' class='form-control w-100 validate[funcCall[checkJSON]]'>$trigger_args</textarea>
+	    <p class='help-block'>Action arguments, like email address, regular expression and so on in JSON format</p>
 	</div><div class='form-group'>
 	    <input type='checkbox' name='is_enable' ".isChecked($trigger_isenable)."> Enabled
 	    <p class='help-block'>If checked, this trigger is enable</p>

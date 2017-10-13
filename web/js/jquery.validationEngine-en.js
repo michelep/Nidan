@@ -180,8 +180,8 @@
 	                    // speaks by itself
 	                    "alertTextLoad": "* Validating, please wait"
 	                },
-                "validate2fields": {
-                    "alertText": "* Please input HELLO"
+                "validateJson": {
+                    "alertText": "* Invalid JSON"
                 },
 	            //tls warning:homegrown not fielded 
                 "dateFormat":{

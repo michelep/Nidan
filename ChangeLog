@@ -1,3 +1,10 @@
+0.0.1rc9 - 13 Oct 2017
+* [Web Gui] Added cron watchdog
+* [Web Gui] Fix pagination bug
+* [Web Gui] Some improvements in cron script
+* [Web Gui] Miscellaneous minor bugs fixed and some improvements
+* [DB] Added primary key ID in EventsLog table
+
 0.0.1rc8 - 02 Oct 2017
 * [Web Gui] Fix notification and some other minor bugs
 * [Web Gui] Added cleanup for old events

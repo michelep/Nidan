@@ -21,24 +21,39 @@ if(strcasecmp(VERSION,$version) != 0) {
     </div>";
 }
 
-// Check for updates, if TRUE
-if($CFG["check_updates"]) {
-    $url = 'https://raw.githubusercontent.com/michelep/Nidan/master/version.xml'; 
-    $xml = simpleXML_load_file($url,"SimpleXMLElement",LIBXML_NOCDATA); 
-    if($xml === FALSE) { 
-	// Error...
-    } else {
-	if(strcasecmp(VERSION,$xml->version) != 0) {
-	    echo "<div class='alert alert-warning' role='alert'>
-		 <strong>A new release available !</strong> Nidan ".$xml->version." was released: ".$xml->note.". Update from <a href='https://github.com/michelep/Nidan'>repository</a>
-	    </div>";
-	}
-	// print_r($xml);
-	// SimpleXMLElement Object ( [version] => 0.0.1rc8 [reldate] => 2017-10-02 [priority] => HIGH [note] => Lot of bugs fixed, minor changes in DB schema, funcionality added )
+// Check for cron watchdog
+$cron_lastrun = new DateTime($myConfig->get("cron_lastrun"));
+if(isset($cron_lastrun)) {
+    $now = new DateTime("now");
+    $interval = date_diff($cron_lastrun, $now);
+    if($interval->m > 30) {
+	// Mmmmhh, seems that cron script is not running
+	echo "<div class='alert alert-warning' role='alert'>
+	    <strong>Cron script is running ?</strong> Seems that cron script is not running since ".$interval->format("%h hour(s) and %i minute(s)").": please check crontab.
+	</div>";
     }
+} else {
+    echo "<div class='alert alert-warning' role='alert'>
+        <strong>Cron script warning !</strong> Please remember to add cron.php script inside crontab
+    </div>";
 }
 
-
+if(rand(1,10) > 7) { // Add some fuzzyness
+// Check for updates, if TRUE
+    if($CFG["check_updates"]) {
+	$url = 'https://raw.githubusercontent.com/michelep/Nidan/master/version.xml'; 
+	$xml = simpleXML_load_file($url,"SimpleXMLElement",LIBXML_NOCDATA); 
+	if($xml === FALSE) { 
+    	    // Error...
+        } else {
+	    if(strcasecmp(VERSION,$xml->version) != 0) {
+	        echo "<div class='alert alert-warning' role='alert'>
+		     <strong>A new release available !</strong> Nidan ".$xml->version." was released: ".$xml->note.". Update from <a href='https://github.com/michelep/Nidan'>repository</a>
+		</div>";
+	    }
+	}
+    }
+}
 ?>
     <div class="row">
         <div class="col-lg-3 col-md-6">

@@ -2,7 +2,7 @@
 
 // ============================ VERSIONING 
 
-define("VERSION","0.0.1rc8");
+define("VERSION","0.0.1rc9");
 
 // ============================
 
@@ -273,11 +273,11 @@ if(!empty($post_action)) {
 	    }
 
 	    if($trigger_id > 0) { // Update trigger
-		doQuery("UPDATE Triggers SET agentId='$trigger_agentid',Event='$trigger_event',Action='$trigger_action',Priority='$trigger_priority',Args='$trigger_args',isEnable=$trigger_isenable WHERE ID='$trigger_id';");
+		doQuery("UPDATE Triggers SET agentId=".($trigger_agentid ? $trigger_agentid:'NULL').",Event='$trigger_event',Action='$trigger_action',Priority='$trigger_priority',Args='$trigger_args',isEnable=$trigger_isenable WHERE ID='$trigger_id';");
 		$mySession->sendMessage("Trigger $trigger_event updated successfully !");
 		LOGWrite("Trigger $trigger_id updated",LOG_DEBUG);
 	    } else { // Add a trigger
-		doQuery("INSERT INTO Triggers(agentId,Event,Action,Priority,Args,userId,isEnable,lastProcessed,addDate) VALUES ('$trigger_agentid','$trigger_event','$trigger_action','$trigger_priority','$trigger_args','$mySession->userId',$trigger_isenable,NOW(),NOW());");
+		doQuery("INSERT INTO Triggers(agentId,Event,Action,Priority,Args,userId,isEnable,lastProcessed,addDate) VALUES (".($trigger_agentid ? $trigger_agentid:'NULL').",'$trigger_event','$trigger_action','$trigger_priority','$trigger_args','$mySession->userId',$trigger_isenable,NOW(),NOW());");
 		$trigger_id = mysqli_insert_id($DB);
 		$mySession->sendMessage("New trigger $trigger_id on $trigger_event added successfully !");
 		LOGWrite("Trigger $trigger_id on $trigger_event added",LOG_DEBUG);
@@ -357,7 +357,28 @@ function getHumanETA($mins) {
     }
 }
 
+function keepGet($k, $v) {
+    $get_vals = "?$k=$v";
+    if(count($_GET) > 0) {
+	foreach($_GET as $key => $value) {
+	    if($key != $k) {
+		$get_vals .= "&$key=$value";
+	    }
+	}
+    }
+    return $get_vals;
+}
+
 function getPagination($cur_page,$total_items,$base_url,$items_per_page=10) {
+    // Keep other $_GET variables
+    $get_vals='';
+    if(count($_GET) > 0) {
+	foreach($_GET as $key => $value) {
+	    if($key != 'p') {
+		$get_vals .= "&$key=$value";
+	    }
+	}
+    }
 
     $num_pages = ceil($total_items/$items_per_page);
 
@@ -389,28 +410,28 @@ function getPagination($cur_page,$total_items,$base_url,$items_per_page=10) {
 	$max = $cur_page+3;
     }
     echo "	<li class='page-item'>
-		    <a class='page-link' href='".($base_url.'?p=1')." tabindex='-1'>First</a>
+		    <a class='page-link' href='".($base_url.'?p=1').$get_vals." tabindex='-1'>First</a>
 		</li>";
 
     if($min > 1) {
 	echo "	<li class='page-item'>
-		    <a class='page-link' href='".($base_url.'?p='.$prev_page)."'>...</a>
+		    <a class='page-link' href='".($base_url.'?p='.$prev_page).$get_vals."'>...</a>
 		</li>";
     }
 
     for($p=$min;$p<=$max;$p++) {
 	echo "<li class='page-item ".(($p==$cur_page) ? 'active':'')."'>
-	    <a class='page-link'  href='".($base_url.'?p='.$p)."'>$p</a>
+	    <a class='page-link'  href='".($base_url.'?p='.$p).$get_vals."'>$p</a>
 	</li>";
     }
     if($p < $num_pages) {
 	echo "	<li class='page-item'>
-		    <a class='page-link' href='".($base_url.'?p='.$next_page)."'>...</a>
+		    <a class='page-link' href='".($base_url.'?p='.$next_page).$get_vals."'>...</a>
 		</li>";
     }
 
     echo "	<li class='page-item'>
-		    <a class='page-link' href='".($base_url.'?p='.$num_pages)."'>Last</a>
+		    <a class='page-link' href='".($base_url.'?p='.$num_pages).$get_vals."'>Last</a>
 		</li>
 	    </ul>
 	</nav>";
@@ -475,7 +496,7 @@ function sendMail($toEmail, $toName, $subject, $message) {
 
 	$mail->Subject = $subject;
 
-	$mailBody = str_replace(array("%body%","%toemail%","%toname%"),array($message,$toEmail,$toName),$myConfig->get("mail_template"));
+	$mailBody = str_replace(array("%body%","%toemail%","%toname%","%host%"),array($message,$toEmail,$toName,gethostname()),$myConfig->get("mail_template"));
 
 	$mail->MsgHTML($mailBody);
 	$mail->AltBody = $mail->html2text($mailBody,true);
@@ -544,7 +565,7 @@ class Config {
     
     function set($name, $value) {
 	global $DB;
-	doQuery("INSERT INTO Config (Name,Value) VALUES ('".mysqli_real_escape_string($DB,$name)."','".mysqli_real_escape_string($DB,$value)."') ON DUPLICATE KEY UPDATE Value=''".mysqli_real_escape_string($DB,$value)."';");
+	doQuery("INSERT INTO Config (Name,Value) VALUES ('".mysqli_real_escape_string($DB,$name)."','".mysqli_real_escape_string($DB,$value)."') ON DUPLICATE KEY UPDATE Value='".mysqli_real_escape_string($DB,$value)."';");
     }
 }
 
@@ -628,6 +649,7 @@ class Network {
     var $checkCycle;
 
     function __construct($id=false) {
+	global $CFG;
 	if($id) {
 	    $result = doQuery("SELECT ID,Network,(SELECT COUNT(ID) FROM Hosts WHERE netId=Networks.ID) AS HostsCount,Description,Prefs,agentId,isEnable,addDate,lastCheck,scanTime,checkCycle FROM Networks WHERE ID='$id';");
 	    if(mysqli_num_rows($result) > 0) {
@@ -642,7 +664,7 @@ class Network {
     		$this->checkCycle = $row["checkCycle"];
 		$this->scanTime = $row["scanTime"];
 
-		foreach($CFG["defaultNetworksPrefs"] as $name => $value) {
+		foreach($CFG["defaultNetworkPrefs"] as $name => $value) {
 		    $this->scanPrefs[$name] = $value;
 		}
 
@@ -867,13 +889,15 @@ class Agent {
 // When something happens, this function weill be called...
 //
 function raiseEvent($agent_id,$job_id,$event,$args=NULL) {
+    global $DB;
+    
     LOGWrite("Event '$event' raised by agent $agent_id for job $job_id");
 
     // Add event to queue...
     if(empty($args)) {
-	doQuery("INSERT INTO EventsLog(addDate,agentId,jobId,Event,Args) VALUES (NOW(),'$agent_id','$job_id','$event',NULL);");
+	doQuery("INSERT INTO EventsLog(addDate,agentId,jobId,Event,Args) VALUES (NOW(),'$agent_id','$job_id','".mysqli_real_escape_string($DB,$event)."',NULL);");
     } else {
-	doQuery("INSERT INTO EventsLog(addDate,agentId,jobId,Event,Args) VALUES (NOW(),'$agent_id','$job_id','$event','".json_encode($args)."');");
+	doQuery("INSERT INTO EventsLog(addDate,agentId,jobId,Event,Args) VALUES (NOW(),'$agent_id','$job_id','".mysqli_real_escape_string($DB,$event)."','".json_encode($args)."');");
     }
 }
 
