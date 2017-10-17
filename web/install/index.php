@@ -2,8 +2,6 @@
 
 include "../config.inc.php";
 
-$dbTables = array("Agents","Config","EventsLog","Hosts","JobsQueue","Log","Networks","Services","SessionMessages","Sessions","Stats","Triggers","Users");
-
 global $mysqli;
 
 function check_db($host,$port,$user,$password,$name) {
@@ -78,41 +76,39 @@ if(isset($_POST["step"])) {
 	    $step = 0;
 	} else {
 	    echo "<div class='alert alert-success'>
-		<strong>Well done!</strong> Successfully connected to the DB. Now check DB structure...
+		<strong>Well done!</strong> Successfully connected to the DB. Now import tables...
 	    </div>";
 	    //
-	    $tables = do_query("SHOW TABLES;");
-	    if($tables) {
-		while ($row = $tables->fetch_array()) {
-		    $tmpTables[] = $row[0];
-		}
-		// Free result set
-		$tables->close();
-
-		$result = array_diff($dbTables, $tmpTables);
-		if(count($result) > 0) {
-		    echo "<div class='alert alert-warning'>
-			<strong>Ooops !</strong> DB seems to be not updated...
-		    </div>";
-		    $step = 2;
-		} else {
-		    echo "<div class='alert alert-success'>
-			<strong>OK !</strong> DB seems to be ok, but we check deeply...
-		    </div>";
-		    foreach($dbTables as $table) {
-			$tb = do_query("SHOW COLUMNS FROM $table;");
-			while ($row = $tb->fetch_array()) {
-			    array_unshift($row, $table);
-			    print_r($row);
+	    $sql_line = '';
+	    $lines = file(__DIR__.'/nidan.sql');
+	    if($lines == false ) {
+		echo "<div class='alert alert-warning'>
+		    Unable to open nidan.sql file: please check and try again
+		</div>";
+	    } else {
+		foreach ($lines as $line) {
+		    // Skip comments
+		    if(substr($line, 0, 2) == '--' || $line == '') {
+			continue;
+		    }
+		    // Add this line to the current segment
+		    $sql_line .= $line;
+	    	    // If it has a semicolon at the end, it's the end of the query
+		    if(substr(trim($line), -1, 1) == ';') {
+			// Perform the query
+			if($result = do_query($sql_line)) {
+			    // Reset temp variable to empty
+		    	    $templine = '';
+			} else {
+			    echo "<div class='alert alert-error'>
+				Ooops ! An error occourred while executing '$sql_line': ".$mysqli->error."
+		    	    </div>";
 			}
-			$tb->close();
 		    }
 		}
-	    } else {
-		echo "<div class='alert alert-warning'>
-		    <strong>Ooops !</strong> No tables here ? 
+		echo "<div class='alert alert-success'>
+		    <strong>That's all !</strong> Now you can login to <a href='/'>Nidan</a> using 'admin@localhost' as username and 'admin' as password. Remember to change it ;-)
 		</div>";
-		$step = 1;
 	    }
 	}
     }
@@ -138,14 +134,12 @@ if($step == 0) {// First step: check DB connection
 		    </div><div class="form-group">
 			<label for="dbPassword">Database password</label>
 			<input type="password" class="form-control validate[required]" id="dbPassword" name="db_password" placeholder="DBMS password" value="<?php echo $CFG["db_password"]; ?>">
+		    </div><div class="alert alert-warning">
+			Please note: clicking on the button will erase and reinitialize Nidan database !
 		    </div><div class="form-group">
-			<input type="submit" value="Check database">
+			<input type="submit" value="Check and install">
 		    </div>
 		</form>
-<?php
-} else if ($step == 1) { //
-?>
-
 <?php
 }
 ?>

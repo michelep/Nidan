@@ -2,7 +2,7 @@
 
 // ============================ VERSIONING 
 
-define("VERSION","0.0.1rc9");
+define("VERSION","0.0.1");
 
 // ============================
 
@@ -762,10 +762,11 @@ class Job {
     var $addDate;
     var $startDate;
     var $endDate;
+    var $timeElapsed;
 
     function __construct($id=false) {
 	if($id) {
-	    $result = doQuery("SELECT ID,Job,itemId,Args,agentId,addDate,startDate,endDate FROM JobsQueue WHERE ID='$id';");
+	    $result = doQuery("SELECT ID,Job,itemId,Args,agentId,addDate,startDate,endDate,timeElapsed FROM JobsQueue WHERE ID='$id';");
 	    if(mysqli_num_rows($result) > 0) {
 		$row = mysqli_fetch_array($result,MYSQLI_ASSOC);
 
@@ -773,11 +774,13 @@ class Job {
 		$this->job = $row["Job"];
 		$this->itemId = $row["itemId"];
 		$this->agentId = $row["agentId"];
-		$this->args = json_decode($row["Args"]);
-		    	    
+		$this->args = json_decode($row["Args"],true);
+		
 		$this->addDate = new DateTime($row["addDate"]);
 		$this->startDate = new DateTime($row["startDate"]);
 		$this->endDate = new DateTime($row["endDate"]);
+
+		$this->timeElapsed = $row["timeElapsed"];
 	    } else {
 		return false;
 	    }
@@ -836,6 +839,25 @@ class Job {
 	return false;
     }
 
+    function getDetails() {
+	$result = array();
+
+	$result["scan_method"] = ($this->args["scan_method"] ? $this->args["scan_method"]:"default");
+
+	switch($this->job) {
+	    case 'net_scan':
+		$result["target"] = $this->args["net_addr"];
+		$result["target_type"] = "network";
+		break;
+	    case 'host_scan':
+		$result["target"] = $this->args["host_addr"];
+		$result["target_type"] = "host";
+		break;
+	    default:
+		break;
+	}
+	return $result;
+    }
 }
 
 class Agent {
@@ -884,20 +906,43 @@ class Agent {
 
 }
 
+function compareArray($new, $old) {
+    $added = array_diff_assoc($new, $old);
+    $removed = array_diff_assoc($old, $new);
+
+    $result = array();
+
+    foreach($added as $item) {
+	$result[] = array("added" => $item);
+    }
+
+    foreach($removed as $item) {
+	$result[] = array("removed" => $item);
+    }
+    
+    return $result;
+}
+
 ////////////////////////////////////////////////////////
 //
-// When something happens, this function weill be called...
+// When something happens, this function will be called...
 //
 function raiseEvent($agent_id,$job_id,$event,$args=NULL) {
     global $DB;
     
+    if($args) {
+	$argsArray = json_encode($args);
+    } else {
+	$argsArray = FALSE;
+    }
+
     LOGWrite("Event '$event' raised by agent $agent_id for job $job_id");
 
     // Add event to queue...
-    if(empty($args)) {
-	doQuery("INSERT INTO EventsLog(addDate,agentId,jobId,Event,Args) VALUES (NOW(),'$agent_id','$job_id','".mysqli_real_escape_string($DB,$event)."',NULL);");
+    if($argsArray) {
+        doQuery("INSERT INTO EventsLog(addDate,agentId,jobId,Event,Args) VALUES (NOW(),'$agent_id','$job_id','".mysqli_real_escape_string($DB,$event)."','$argsArray');");
     } else {
-	doQuery("INSERT INTO EventsLog(addDate,agentId,jobId,Event,Args) VALUES (NOW(),'$agent_id','$job_id','".mysqli_real_escape_string($DB,$event)."','".json_encode($args)."');");
+        doQuery("INSERT INTO EventsLog(addDate,agentId,jobId,Event,Args) VALUES (NOW(),'$agent_id','$job_id','".mysqli_real_escape_string($DB,$event)."',NULL);");
     }
 }
 

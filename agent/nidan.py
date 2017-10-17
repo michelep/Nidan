@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 #
 # Nidan
-# 0.0.1rc8
+# 0.0.1
 #
 # (C) 2017 Michele <o-zone@zerozone.it> Pinassi
 
@@ -76,10 +76,15 @@ if __name__ == '__main__':
     Config.threads_max = int(conf.get('Agent','threads_max'))
     Config.sleep_time = int(conf.get('Agent','sleep_time'))
 
-    logging.basicConfig(level=logging.DEBUG, format="%(asctime)s;%(levelname)s;%(message)s")
-    flh = logging.FileHandler(Config.log_file, "w")
-    Config.log = logging.getLogger(__file__)
-    Config.log.addHandler(flh)
+
+    if Config.log_file:
+	logging.basicConfig(level=logging.DEBUG, format="%(asctime)s;%(levelname)s;%(message)s")
+	flh = logging.FileHandler(Config.log_file, "w")
+	Config.log = logging.getLogger(__file__)
+	Config.log.addHandler(flh)
+    else:
+	flh = logging.NullHandler()
+	Config.log = logging.getLogger(__name__)
 
     # Setup client connection with Nidan server
     Config.client = RESTClient(Config.agent_apikey, Config.server_url)

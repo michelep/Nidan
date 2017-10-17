@@ -10,7 +10,7 @@ def read(fname):
 
 setup(
     name = "Nidan Agent",
-    version = "0.0.1rc8",
+    version = "0.0.1",
     author = "Michele Pinassi",
     author_email = "o-zone@zerozone.it",
     description = ("Agent for Nidan network monitoring system"),
@@ -22,7 +22,7 @@ setup(
     long_description=read('../README.md'),
     install_requires=['python-nmap>=0.6.1','schedule','jsonpickle','requests'],
     classifiers=[
-        "Development Status :: 2 - Pre-Alpha",
+        "Development Status :: 3 - Alpha",
 	"Topic :: System :: Networking :: Monitoring"
 	"Environment :: Console",
 	"Intended Audience :: Information Technology",

@@ -7,12 +7,13 @@ import nmap
 import time
 import socket
 import jsonpickle
+import Queue
 
 from config import Config
 
 class Scanner:
     def __init__(self):
-	pass
+	self.q = []
     
     def net_scan(self, job_id, args):
 	net_addr = args['net_addr']
@@ -26,8 +27,6 @@ class Scanner:
 	nm.scan(hosts=net_addr, arguments=scan_method)
 
 	for host_ip in nm.all_hosts():
-	    Config.log.debug('Host %s (%s) is %s' % (host_ip, nm[host_ip].hostname(), nm[host_ip].state()))
-
 	    if 'mac' in nm[host_ip]['addresses']:
 		host_mac = nm[host_ip]['addresses']
 		host_vendor = nm[host_ip]['vendor']
@@ -35,8 +34,11 @@ class Scanner:
 		host_mac = ''
 		host_vendor = ''
 
+	    Config.log.debug('Host %s (%s) is %s' % (host_ip, nm[host_ip].hostname(), nm[host_ip].state()))
+
 	    # Send host discovery to Nidan controller
 	    Config.client.post('/host/add',{"job_id": job_id, "ip": host_ip, "hostname": nm[host_ip].hostname(), "mac": host_mac, "vendor": host_vendor, "state": nm[host_ip].state()})
+	    # self.q.append({"job_id": job_id, "ip": host_ip, "hostname": nm[host_ip].hostname(), "mac": host_mac, "vendor": host_vendor, "state": nm[host_ip].state()})
 	
 	scantime = time.time() - starttime;
 
@@ -73,6 +75,7 @@ class Scanner:
 
 		    # Send service details to Nidan controller
 		    Config.client.post('/service/add',{"job_id": job_id, "ip": host_ip, "port": port, "proto": proto, "state": nm[host_ip][proto][port]['state'], "banner": banner})
+		    # self.q.append({"job_id": job_id, "ip": host_ip, "port": port, "proto": proto, "state": nm[host_ip][proto][port]['state'], "banner": banner})
 
 	scantime = time.time() - starttime;
 
@@ -101,8 +104,6 @@ class scannerJob:
 	res = Config.client.post('/job/get')
 
 	if res == True:
-#	    print Config.client.req.text
-
 # {
 #    "success": "1",
 #    "job_id": "1",

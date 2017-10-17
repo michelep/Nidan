@@ -33,9 +33,7 @@ For Agents:
 
 ![Summary page](assets/screenshot_4.jpg "Summary page")
 
-Create a new database ('nidan' ?) and import /sql/nidan.sql with mysql to create needed tables:
-
-    mysql -h [host] -u [user] -p < ./sql/nidan.sql
+Create a new database ('nidan' ?) and an user with rights to create and use tables. If you need help, please check [How To Create a New User and Grant Permissions in MySQL](https://www.digitalocean.com/community/tutorials/how-to-create-a-new-user-and-grant-permissions-in-mysql)
 
 Now prepare web folder, copying all /web content to web server root folder (usually /var/www/) or wherever you want to store PHP pages.
 Enable apache2 mod-rewrite if not ('a2enmod rewrite' as root) and check/change db access configuration in config.inc.php:
@@ -106,7 +104,9 @@ Now add a new cron instance with 'crontab -e', that runs cron.php script every 5
     # m h  dom mon dow   command
     */5 * * * * php /var/www/html/cron.php &> /dev/null
 
-Open a browser and go to your web server. Default username:password is "admin@localhost:admin".
+Open a browser and go to your web server: you should be redirected to /install page, where you can check database connection and install tables and default data.
+
+After, you can login with default username "admin@localhost" and password "admin".
 
 ![Web signin page](assets/screenshot_2.jpg "Web signin page")
 

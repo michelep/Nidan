@@ -171,7 +171,7 @@ class NidanController
 				$new_net_scenario = $network->getHosts();
 
 				if(($old_net_scenario) && ($new_net_scenario)) {
-				    $arr_res = array_diff_assoc($new_net_scenario,$old_net_scenario);
+				    $arr_res = compareArray($new_net_scenario,$old_net_scenario);
 				    if(count($arr_res) > 0) {
 					LOGWrite("REST::net_scan_compare::".var_export($arr_res, true),LOG_DEBUG);
 					raiseEvent($this->agent_id,$job->id,"net_change",array("changes" => $arr_res));
@@ -191,7 +191,7 @@ class NidanController
 				$new_host_scenario = $host->getServices();
 
 				if(($old_host_scenario) && ($new_host_scenario)) {
-				    $arr_res = array_diff_assoc($new_host_scenario,$old_host_scenario);
+				    $arr_res = compareArray($new_host_scenario,$old_host_scenario);
 				    if(count($arr_res) > 0) {
 					LOGWrite("REST::host_scan_compare::".var_export($arr_res, true),LOG_DEBUG);
 					raiseEvent($this->agent_id,$job->id,"host_change",array("changes" => $arr_res));
@@ -229,8 +229,6 @@ class NidanController
 
 	LOGWrite("REST::host_add()::".var_export($_POST, true),LOG_DEBUG);
 
-	// array (#012  'vendor' => '',#012  'job_id' => '9',#012  'ip' => '172.16.40.12',#012  'hostname' => 'pc-vannucchi-gd.ammi.unisi.it',#012  'state' => 'up',#012  'mac' => '',#012)
-
 	if($this->agent_id) {
 	    $agent = new Agent($this->agent_id);
 	    
@@ -263,12 +261,11 @@ class NidanController
 			$new_host["vendor"] = $host->vendor;
 			$new_host["state"] = $host->state;
 
-			$arr_res = array_diff_assoc($new_host,$old_host);
+			$arr_res = compareArray($new_host,$old_host);
 			if(count($arr_res) > 0) {
 			    //Something has changed...so raise event !
 			    raiseEvent($this->agent_id,$job_id,"host_change",$arr_res);
 			}
-
 			return array("success" => "OK");
 		    } else {
 			// New host: add to DB
@@ -330,7 +327,7 @@ class NidanController
 			$new_service["state"] = $state;
 			$new_service["banner"] = stripslashes($banner);
 
-			$arr_res = array_diff_assoc($new_service,$old_service);
+			$arr_res = compareArray($new_service,$old_service);
 			if(count($arr_res) > 0) {
 			    //Something has changed...so raise event !
 			    raiseEvent($this->agent_id,$job_id,"service_change",$arr_res);

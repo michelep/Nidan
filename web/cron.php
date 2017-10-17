@@ -53,7 +53,7 @@ if(mysqli_num_rows($result) > 0) {
 	$agent_isonline = $row["isOnline"];
 
 	if(($agent_age > 15)&&($agent_isonline == 1)) {
-	    raiseEvent($agent_id,NULL,'agent_offline',$args=NULL);
+	    raiseEvent($agent_id,NULL,'agent_offline',$args=array("timeout" => $agent_age));
 
 	    LOGWrite("AGENT $agent_id offline for $agent_age minutes",LOG_WARNING);
 
@@ -104,21 +104,29 @@ if(mysqli_num_rows($result) > 0) {
 
 		doQuery("UPDATE Triggers SET lastRaised=NOW(),raisedCount=raisedCount+1,lastProcessed=NOW() WHERE ID='$trigger_id';");
 
+		$job_details = $tmp_job->getDetails();
+
+		// <============== Compose message
+		$msg = "Dear $tmpUser->name,<br/>
+		as you requested, a new event '$event' was triggered".
+		if($job_id > 0) {
+		    $msg .= "by Job $job_id related to:<br/>
+		    <blockquote>
+		        IP/Network: ".$job_details["target"]." (".$job_details["target_type"].")<br/>
+		        Scan method: ".$job_details["scan_method"]."<br/>
+		    </blockquote>";
+		}
+		$msg .= "by Agent Id $agent_id:<br/>
+		<blockquote>
+		    ".print_r($args, true)."
+		</blockquote><br/>
+		Your tireless employee, Nidan<br/>";
+		// ==============>
+
 		switch($trigger_action) {
 		    case 'sendmail':
 			$dest_email = $trigger_args["email"];
 			if(filter_var($dest_email, FILTER_VALIDATE_EMAIL)) {
-			    // Compose mail body
-			    $msg = "Dear $tmpUser->name,<br/>
-			    as you requested, a new event '$event' was triggered for Job $job_id:<br/>
-			    <blockquote>
-				".print_r($tmp_job->args,true)."
-			    </blockquote>
-			    by Agent Id $agent_id:<br/>
-			    <blockquote>
-				".print_r($args,true)."
-			    </blockquote><br/>
-			    Your tireless employee, Nidan<br/>";
 			    sendMail($dest_email,$tmpUser->name,"EVENT TRIGGERED - $event",$msg);
 			}
 			break;

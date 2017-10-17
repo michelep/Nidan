@@ -1,7 +1,7 @@
 <?xml version='1.0' standalone='yes'?>
 <nidan>
-    <version>0.0.1rc9</version>
-    <reldate>2017-10-13</reldate>
+    <version>0.0.1</version>
+    <reldate>2017-10-18</reldate>
     <priority>HIGH</priority>
-    <note>Lot of bugs fixed, minor changes in DB schema, funcionality added</note>
+    <note>Lot of bugs fixed. First alpha release.</note>
 </nidan>
