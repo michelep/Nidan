@@ -70,5 +70,6 @@ if($mySession->isLogged()) {
 echo "<!-- SID: $mySession->id -->\n";
 ?>
     </nav>
+
     <div class="container-fluid"><!-- CONTAINER -->
 	<div class="row"><!-- ROW -->

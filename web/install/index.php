@@ -98,11 +98,12 @@ if(isset($_POST["step"])) {
 			// Perform the query
 			if($result = do_query($sql_line)) {
 			    // Reset temp variable to empty
-		    	    $templine = '';
+		    	    $sql_line = '';
 			} else {
 			    echo "<div class='alert alert-error'>
 				Ooops ! An error occourred while executing '$sql_line': ".$mysqli->error."
 		    	    </div>";
+			    break;
 			}
 		    }
 		}
