@@ -1,5 +1,7 @@
-0.0.1 -
-* [Agent] Added null logging handler 
+0.0.1 - 18 Oct 2017
+* [Web Gui] Installer improved
+* [Web Gui] Some minor fixes and improvements
+* [Agent] Added null logging handler
 
 0.0.1rc9 - 13 Oct 2017
 * [Web Gui] Added cron watchdog
