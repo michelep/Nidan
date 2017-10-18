@@ -108,7 +108,8 @@ if(mysqli_num_rows($result) > 0) {
 
 		// <============== Compose message
 		$msg = "Dear $tmpUser->name,<br/>
-		as you requested, a new event '$event' was triggered".
+		as you requested, a new event '$event' was triggered";
+
 		if($job_id > 0) {
 		    $msg .= "by Job $job_id related to:<br/>
 		    <blockquote>
@@ -116,6 +117,7 @@ if(mysqli_num_rows($result) > 0) {
 		        Scan method: ".$job_details["scan_method"]."<br/>
 		    </blockquote>";
 		}
+
 		$msg .= "by Agent Id $agent_id:<br/>
 		<blockquote>
 		    ".print_r($args, true)."
