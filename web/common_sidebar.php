@@ -29,6 +29,9 @@ function isActive($page) {
     </ul>
     <ul class="nav nav-pills flex-column">
 	<li class="nav-item">
+	    <a class="nav-link <?php isActive('/inbox'); ?>" href="/inbox"><span class="badge badge-info" id="inbox_new_badge"></span><span class="sr-only">unread messages</span> Inbox</a>
+	</li>
+	<li class="nav-item">
 	    <a class="nav-link <?php isActive('/jobs'); ?>" href="/jobs">Jobs queue</a>
 	</li>
 	<li class="nav-item">
@@ -52,6 +55,9 @@ if($myUser->getACL('manageUsers')) {
 <?php
 }
 ?>
+	<li class="nav-item">
+	    <a class="nav-link <?php isActive('/profile'); ?>" href="/profile">My profile</a>
+	</li>
     </ul>
     <ul class="nav nav-pills flex-column">
 	<li class="nav-item">

@@ -41,7 +41,7 @@ include_once "common_sidebar.php";
 if(isset($_GET["id"])) {
 ?>
     <div class="panel panel-default">
-	<div class="panel-heading"><h2>Host <?php echo "$host_name ($host_ip)"; ?> details</h2></div>
+	<div class="panel-heading"><h2><i class="fa fa-laptop" aria-hidden="true"></i> Host <?php echo "$host_name ($host_ip)"; ?> details</h2></div>
 	<div class="panel-body">
 	    <p>
 		Added on <?php echo $host_adddate->format("H:i:s d-M-Y"); ?>

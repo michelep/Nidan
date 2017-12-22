@@ -25,6 +25,7 @@ if(isset($pageTitle)) {
 
     <link href="/css/bootstrap.min.css" rel="stylesheet">
     <link href="/css/tether.min.css" rel="stylesheet">
+    <link href="/css/animate.css" rel="stylesheet">
     <link href="/css/font-awesome.min.css" rel="stylesheet">
     <link href="/css/bootstrap-table.min.css" rel="stylesheet">
     <link href="/css/validationEngine.jquery.css" rel="stylesheet">
@@ -44,21 +45,12 @@ if(file_exists("./css/".$local_css)) {
 	<button class="navbar-toggler navbar-toggler-right hidden-lg-up" type="button" data-toggle="collapse" data-target="#navbarTop" aria-controls="navbarTop" aria-expanded="false" aria-label="Toggle navigation">
 	    <span class="navbar-toggler-icon"></span>
 	</button>
-	<a class="navbar-brand" href="/"><img src="/img/header_logo.png" class="img-responsive header-logo" alt="Nidan logo"/> Nidan</a>
+	<a class="navbar-brand" href="/"><img src="/img/header_logo.png" class="img-responsive header-logo" alt="Nidan logo"/> Nidan <small class="header">v.<?php echo VERSION; ?></small></a>
 <?php
 if($mySession->isLogged()) {
 ?>
 	<div class="collapse navbar-collapse" id="navbarTop">
-    	    <ul class="navbar-nav mr-auto">
-    		<li class="nav-item active">
-    		    <a class="nav-link" href="/">Home</a>
-		</li>
-		<li class="nav-item">
-		    <a class="nav-link" href="/profile">Profile</a>
-		</li>
-		<li class="nav-item">
-		    <a class="nav-link" href="/help">Help</a>
-		</li>
+	    <ul class="navbar-nav mr-auto">
 	    </ul>
 	    <form class="form-inline mt-2 mt-md-0" action="/search" method="GET">
 		<input class="form-control mr-sm-2 validate[required]" type="search" name="q" label="search" placeholder="Search host/service" value="<?php if(isset($_GET["q"])) { echo $_GET["q"]; }?>">

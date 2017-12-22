@@ -322,6 +322,7 @@ if($mySession->isLogged()) {
 	    <span class='form-group-addon'>Action:</span>
 	    <select data-placeholder='Choose action when the event happen' class='form-control' id='trigger_action' name='trigger_action'>
 		<option value='none' ".isSelected('none',$trigger_action).">Nothing</option>
+		<option value='notify' ".isSelected('notify',$trigger_action).">Send notification</option>
 		<option value='sendmail' ".isSelected('sendmail',$trigger_action).">Send mail</option>
 	    </select>
 	</div><div class='form-group'>
@@ -375,6 +376,73 @@ if($mySession->isLogged()) {
 		<textarea id='config_value' name='config_value' class='form-control w-100'>".htmlspecialchars($config_value)."</textarea>
 	    </div></form>";
 	}
+    }
+
+    /* ===========================================
+    Return INBOX new message
+    =========================================== */
+    if($ajax_action == "inbox_check") {
+	/* Check if there's any unread messages in inbox.. */
+	$result = doQuery("SELECT ID FROM Inbox WHERE userId='$myUser->id' AND isRead=0;");
+	if(mysqli_num_rows($result) > 0) {
+	    echo mysqli_num_rows($result);
+	}
+    }
+
+    /* ===========================================
+    Read INBOX message
+    =========================================== */
+    if($ajax_action == "inbox_read") {
+	$inbox_id = intval($_GET["id"]);
+	if($inbox_id > 0) {
+	    $result = doQuery("SELECT Title, Content, isRead, addDate, readDate FROM Inbox WHERE userId='$myUser->id' AND ID='$inbox_id';");
+	    if(mysqli_num_rows($result) > 0) {
+		$row = mysqli_fetch_array($result,MYSQL_ASSOC);
+		$inbox_title = stripslashes($row["Title"]);
+		$inbox_content = stripslashes($row["Content"]);
+		$inbox_is_read = $row["isRead"];
+		$inbox_adddate = new DateTime($row["addDate"]);
+		$inbox_readdate = new DateTime($row["readDate"]);
+		echo "<p>
+		    ".$inbox_content."
+		</p><p>
+		    <small class='text-muted'><i class='glyphicon glyphicon-time'></i> Received on ".$inbox_adddate->format("d-m-Y")."</small>
+		</p>";
+
+		doQuery("UPDATE Inbox SET isRead=1,readDate=NOW() WHERE ID='$inbox_id';");
+	    }
+	}
+    }
+
+    /* ===========================================
+    Mark as read INBOX new message
+    =========================================== */
+    if($ajax_action == "inbox_mark_read") {
+	$inbox_id = intval($_GET["id"]);
+	if($inbox_id > 0) {
+	    doQuery("UPDATE Inbox SET isRead=1,readDate=NOW() WHERE ID='$inbox_id' AND userId='$myUser->id';");
+	    echo "Message $inbox_id mark as read";
+	}
+    }
+
+    if($ajax_action == "inbox_mark_all_read") {
+	doQuery("UPDATE Inbox SET isRead=1,readDate=NOW() WHERE userId='$myUser->id';");
+	echo "All message(s) marked as read";
+    }
+    /* ===========================================
+    Delete INBOX new message
+    =========================================== */
+    if($ajax_action == "inbox_delete") {
+	$inbox_id = intval($_GET["id"]);
+	if($inbox_id > 0) {
+	    doQuery("DELETE FROM Inbox WHERE ID='$inbox_id' AND userId='$myUser->id';");
+	    echo "Message $inbox_id deleted";
+	}
+    }
+
+    if($ajax_action == "inbox_delete_read") {
+	doQuery("DELETE FROM Inbox WHERE isRead='1' AND userId='$myUser->id';");
+	echo "Readed message(s) removed";
     }
 
     /* ===========================================
@@ -433,13 +501,12 @@ if($mySession->isLogged()) {
 	$offset = intval($_GET["offset"]);
 	$limit = intval($_GET["limit"]);
 
-	$result = doQuery("SELECT addDate,agentId,jobId,Event,Args FROM EventsLog ORDER BY addDate $order_by LIMIT $limit OFFSET $offset;");
+	$result = doQuery("SELECT addDate,jobId,Event,Args FROM EventsLog ORDER BY addDate $order_by LIMIT $limit OFFSET $offset;");
 	if(mysqli_num_rows($result) > 0) {
 	    $ret_array = array("total" => $total_rows);
 
 	    while($row = mysqli_fetch_array($result,MYSQLI_ASSOC)) {
     		$log_adddate = new DateTime($row["addDate"]);
-		$log_agentid = $row["agentId"];
 		$log_jobid = $row["jobId"];
 		$log_event = stripslashes($row["Event"]);
 		$log_args = $row["Args"];

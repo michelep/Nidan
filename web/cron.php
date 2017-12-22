@@ -53,7 +53,7 @@ if(mysqli_num_rows($result) > 0) {
 	$agent_isonline = $row["isOnline"];
 
 	if(($agent_age > 15)&&($agent_isonline == 1)) {
-	    raiseEvent($agent_id,NULL,'agent_offline',$args=array("timeout" => $agent_age));
+	    addEvent(NULL,'agent_offline',$args=array('agent_id' => $agent_id, 'timeout' => $agent_age));
 
 	    LOGWrite("AGENT $agent_id offline for $agent_age minutes",LOG_WARNING);
 
@@ -75,19 +75,20 @@ if($event_keep > 0) {
 //
 $event_lastid = ($myConfig->get("event_lastid") ? $myConfig->get("event_lastid"):0);
 
-$result = doQuery("SELECT ID,agentId,jobId,Event,Args,addDate,TIMESTAMPDIFF(MINUTE,addDate,NOW()) AS ETA FROM EventsLog WHERE ID > $event_lastid ORDER BY ID;");
+$result = doQuery("SELECT ID,jobId,Event,Args,addDate,TIMESTAMPDIFF(MINUTE,addDate,NOW()) AS ETA FROM EventsLog WHERE ID > $event_lastid AND jobId IS NULL ORDER BY ID;");
 if(mysqli_num_rows($result) > 0) {
     while($row = mysqli_fetch_array($result,MYSQLI_ASSOC)) {
 	$event = stripslashes($row["Event"]);
 	$event_id = $row["ID"];
-	$agent_id = intval($row["agentId"]);
 	$job_id = intval($row["jobId"]);
+	$tmp_job = new Job($job_id);
+
 	$args = stripslashes($row["Args"]);
 	$eta = intval($row["ETA"]);
 	$add_date = new DateTime($row["addDate"]);
 
 	// Check matching trigger(s)
-	$triggers = doQuery("SELECT ID,Action,Priority,Args,userId FROM Triggers WHERE (Event LIKE '$event') AND (agentId IS NULL OR agentId='$agent_id');");
+	$triggers = doQuery("SELECT ID,Action,Priority,Args,userId FROM Triggers WHERE (Event LIKE '$event') AND (agentId IS NULL OR agentId='$tmp_job->agentId');");
 	if(mysqli_num_rows($triggers) > 0) {
 	    // Triggered !
 	    while($row = mysqli_fetch_array($triggers,MYSQLI_ASSOC)) {
@@ -98,8 +99,6 @@ if(mysqli_num_rows($result) > 0) {
 
 		$tmpUser = new User($row["userId"]);
 
-		$tmp_job = new Job($job_id);
-
 		LOGWrite("TRIGGERed($trigger_id) action $event for user $tmpUser->name",LOG_NOTICE);
 
 		doQuery("UPDATE Triggers SET lastRaised=NOW(),raisedCount=raisedCount+1,lastProcessed=NOW() WHERE ID='$trigger_id';");
@@ -108,8 +107,7 @@ if(mysqli_num_rows($result) > 0) {
 
 		// <============== Compose message
 		$msg = "Dear $tmpUser->name,<br/>
-		as you requested, a new event '$event' was triggered";
-
+		as you requested, a new event '$event' was triggered ";
 		if($job_id > 0) {
 		    $msg .= "by Job $job_id related to:<br/>
 		    <blockquote>
@@ -126,6 +124,9 @@ if(mysqli_num_rows($result) > 0) {
 		// ==============>
 
 		switch($trigger_action) {
+		    case 'notify':
+			doQuery("INSERT INTO Inbox(userId,Title,Content,isRead,addDate) VALUES ($tmpUser->id,'".mysqli_real_escape_string($DB,"EVENT TRIGGERED - $event")."','".mysqli_real_escape_string($DB,$msg)."',0,NOW());");
+			break;
 		    case 'sendmail':
 			$dest_email = $trigger_args["email"];
 			if(filter_var($dest_email, FILTER_VALIDATE_EMAIL)) {

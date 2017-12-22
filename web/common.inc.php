@@ -1,8 +1,8 @@
 <?php
 
-// ============================ VERSIONING 
+// ============================ VERSIONING
 
-define("VERSION","0.0.1");
+define("VERSION","0.0.2");
 
 // ============================
 
@@ -65,8 +65,11 @@ $mySession = new Session($sessionId);
 if($mySession->isLogged()) {
     $myUser = new User($mySession->userId);
 }
-$myConfig = new Config();
 
+$myConfig = new Config();
+if($myConfig->get("hostname") == false) { // Firts run ? Set hostname !
+    $myConfig->set("hostname",$_SERVER['SERVER_NAME']);
+}
 
 if(isset($_GET["action"])) {
     $post_action = sanitize($_GET["action"]);
@@ -93,7 +96,7 @@ if(!empty($post_action)) {
 
 	        $mySession->sendMessage("Welcome back ".$myUser->getName());
 
-		LOGWrite("User $myUser->name logged in from IP ".getClientIP());
+		addEvent(NULL,'user_login',array('user_id' => $myUser->id,'ip' => getClientIP()));
 	    } else {
 	        $mySession->sendMessage("Sorry ".$myUser->getName().", your account was disabled.","warning");
 	    }
@@ -105,14 +108,14 @@ if(!empty($post_action)) {
 	}
     }
     if($post_action == "logout") {
-	$myUser = new User($mySession->userId);
 	if($myUser) {
 	    $mySession->userId = false;
 	    doQuery("UPDATE Sessions SET userId=NULL WHERE ID='$mySession->id';");
 
 	    $mySession->sendMessage("User ".$myUser->getName()." logged out");
 
-	    LOGWrite("User $myUser->eMail logged out from IP ".getClientIP());
+	    addEvent(NULL,'user_logout',array('user_id' => $myUser->id));
+
 	    header("Location: /");
 	    exit();
 	}
@@ -131,24 +134,22 @@ if(!empty($post_action)) {
 	        $user_alias = mysqli_real_escape_string($DB,sanitize($_POST["user_alias"]));
 
 		$user_password = APG(5);
-		
+
 		if($user_id > 0) {
 		    // Update existing account
 		    doQuery("UPDATE Users SET Name='$user_name',eMail='$user_email',Alias='$user_alias' WHERE ID='$user_id';");
 		    $mySession->sendMessage("User $user_id updated successfully !");
-		    LOGWrite("User $user_name updated",LOG_DEBUG);
 		} else {
 		    // Create new
 		    doQuery("INSERT INTO Users(Name,eMail,Password,Alias,addDate) VALUES ('$user_name','$user_email',PASSWORD('$user_password'),'$user_alias',NOW());");
 		    $mySession->sendMessage("User $user_id created successfully !");
 		    $user_id = mysqli_insert_id($DB);
 		    // Send mail
-		    $msg = "Dear $user_name,<br/>now you can login on Nidan using the following credentials<br/><br/>username: $user_name<br/>password: $user_password<br/><br/>Have fun!";
+		    $msg = "Dear $user_name,<br/>now you can login on <a href='%host%'>%host%</a> using the following credentials<br/><br/>username: $user_name<br/>password: $user_password<br/><br/>Have fun!";
 		    sendMail($user_email, $user_name, "Welcome to Nidan",$msg);
 		    //
-		    LOGWrite("New user $user_name created successfully",LOG_DEBUG);
 	        }
-		
+
 		$tmpUser = new User($user_id);
 		foreach(array_keys($CFG["defaultUserAcl"]) as $ACL) {
 		    if(isset($_POST["acl_".$ACL]) and ($_POST["acl_".$ACL] == "on")) {
@@ -164,7 +165,6 @@ if(!empty($post_action)) {
 		    $msg = "Dear $tmpUser->name,<br/> your new password is $user_password<br/><br/>Have fun!";
 		    sendMail($tmpUser->eMail, $tmpUser->name, "Nidan password",$msg);
 		    //
-		    LOGWrite("Password reset for user $user_name",LOG_DEBUG);
 		}
 	    }
 	}
@@ -186,7 +186,7 @@ if(!empty($post_action)) {
 	    $agent_name = mysqli_real_escape_string($DB,$_POST["agent_name"]);
 	    $agent_apikey = mysqli_real_escape_string($DB,$_POST["agent_apikey"]);
 	    $agent_desc = mysqli_real_escape_string($DB,$_POST["agent_desc"]);
-	
+
 	    $agent_isenable = 0;
 	    if($_POST["is_enable"] == "on") {
 		$agent_isenable = 1;
@@ -198,7 +198,6 @@ if(!empty($post_action)) {
 	    } else { // Create NEW
 		doQuery("INSERT INTO Agents (Name,apiKey,Description,isEnable,addDate) VALUES ('$agent_name','$agent_apikey','$agent_desc',$agent_isenable,NOW());");
 		$mySession->sendMessage("Agent $agent_name added successfully !");
-		LOGWrite("Agent $agent_name created",LOG_DEBUG);
 	    }
 	}
 
@@ -211,7 +210,7 @@ if(!empty($post_action)) {
 	    $net_desc = mysqli_real_escape_string($DB,$_POST["net_desc"]);
 	    $net_agentid = ($_POST["net_agentid"] ? intval($_POST["net_agentid"]):0);
 	    $net_checkcycle = intval((empty($_POST["net_checkcycle"]) ? 10 : sanitize($_POST["net_checkcycle"])));
-	
+
 	    $net_isenable = 0;
 	    if($_POST["is_enable"] == "on") {
 		$net_isenable = 1;
@@ -223,7 +222,6 @@ if(!empty($post_action)) {
 	    } else { // Create NEW
 		doQuery("INSERT INTO Networks (Network,Description,agentId,isEnable,checkCycle,addDate) VALUES ('$net_address','$net_desc',$net_agentid,$net_isenable,'$net_checkcycle',NOW());");
 		$mySession->sendMessage("New network $net_address created successfully !");
-		LOGWrite("Network $net_address created",LOG_DEBUG);
 	    }
 	}
 	//
@@ -252,7 +250,6 @@ if(!empty($post_action)) {
 	    if($trigger_id > 0) {
 		doQuery("DELETE FROM Triggers WHERE ID='$trigger_id';");
 		$mySession->sendMessage("Trigger $trigger_id deleted successfully !");
-		LOGWrite("Trigger $trigger_id deleted",LOG_DEBUG);
 	    }
 	}
 	//
@@ -275,12 +272,10 @@ if(!empty($post_action)) {
 	    if($trigger_id > 0) { // Update trigger
 		doQuery("UPDATE Triggers SET agentId=".($trigger_agentid ? $trigger_agentid:'NULL').",Event='$trigger_event',Action='$trigger_action',Priority='$trigger_priority',Args='$trigger_args',isEnable=$trigger_isenable WHERE ID='$trigger_id';");
 		$mySession->sendMessage("Trigger $trigger_event updated successfully !");
-		LOGWrite("Trigger $trigger_id updated",LOG_DEBUG);
 	    } else { // Add a trigger
 		doQuery("INSERT INTO Triggers(agentId,Event,Action,Priority,Args,userId,isEnable,lastProcessed,addDate) VALUES (".($trigger_agentid ? $trigger_agentid:'NULL').",'$trigger_event','$trigger_action','$trigger_priority','$trigger_args','$mySession->userId',$trigger_isenable,NOW(),NOW());");
 		$trigger_id = mysqli_insert_id($DB);
 		$mySession->sendMessage("New trigger $trigger_id on $trigger_event added successfully !");
-		LOGWrite("Trigger $trigger_id on $trigger_event added",LOG_DEBUG);
 	    }
 	}
 	//
@@ -298,7 +293,6 @@ if(!empty($post_action)) {
 		if(strcmp($account_password,$account_password_val)==0) {
 		    doQuery("UPDATE Users SET Name='$account_name','Password'='$account_password',Email='$account_email',Alias='$account_alias' WHERE ID='$account_id';");
 		    $mySession->sendMessage("Account $account_id updated successfully !");
-		    LOGWrite("Account $account_it updated",LOG_DEBUG);
 		} else {
 		    $mySession->sendMessage("Password don't match: try again !","error");
 		}
@@ -339,6 +333,19 @@ function isChecked($value) {
     if($value) return "checked";
 }
 
+function getExcerpt($string, $length=55) {
+    $suffix = '&hellip;';
+    $text = trim(str_replace(array("\r","\n", "\t"), ' ', strip_tags($string)));
+
+    $words = explode(' ', $text, $length + 1);
+    if (count($words) > $length) {
+        array_pop($words);
+        array_push($words, '[...]');
+        $text = implode(' ', $words);
+    }
+    return $text;
+}
+
 function getHumanETA($mins) {
     if($mins > 60) {
 	$tmp_hour = intval($mins/60);
@@ -346,12 +353,12 @@ function getHumanETA($mins) {
 	if($tmp_hour > 24) {
 	    $tmp_days = intval($tmp_hour/24);
 	    $tmp_hour = $tmp_hour % 24;
-	    return $tmp_days." days, ".$tmp_hour." hours and ".$tmp_mins." mins ago";
+	    return $tmp_days." days, ".$tmp_hour." hours and ".$tmp_mins." mins";
 	} else {
-	    return $tmp_hour." hours and ".$tmp_mins." mins ago";
+	    return $tmp_hour." hours and ".$tmp_mins." mins";
 	}
     } else if($mins > 0) {
-        return $mins." mins ago";
+        return $mins." mins";
     } else {
         return "now";
     }
@@ -465,7 +472,7 @@ function sanitize($u_Input) {
 
 function APG($nChar=5) {
     $salt = "abcdefghjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTUVWXYZ0123456789";
-    srand((double)microtime()*1000000); 
+    srand((double)microtime()*1000000);
     $i = 0;
     $pass = '';
     while ($i <= $nChar) {
@@ -487,16 +494,16 @@ function sendMail($toEmail, $toName, $subject, $message) {
     global $myConfig;
 
     $mail = new PHPMailer(true);
-    $mail->IsSMTP(); 
+    $mail->IsSMTP();
     try {
-        $mail->Host       = $myConfig->get("mail_server_host"); 
-        $mail->Port       = $myConfig->get("mail_server_port"); 
+        $mail->Host       = $myConfig->get("mail_server_host");
+        $mail->Port       = $myConfig->get("mail_server_port");
         $mail->AddAddress($toEmail, $toName);
         $mail->SetFrom($myConfig->get("mail_from_mail"), $myConfig->get("mail_from_name"));
 
 	$mail->Subject = $subject;
 
-	$mailBody = str_replace(array("%body%","%toemail%","%toname%","%host%"),array($message,$toEmail,$toName,gethostname()),$myConfig->get("mail_template"));
+	$mailBody = str_replace(array("%body%","%toemail%","%toname%","%host%"),array($message,$toEmail,$toName,$myConfig->get("hostname")),$myConfig->get("mail_template"));
 
 	$mail->MsgHTML($mailBody);
 	$mail->AltBody = $mail->html2text($mailBody,true);
@@ -506,9 +513,9 @@ function sendMail($toEmail, $toName, $subject, $message) {
 
         return true;
     } catch (phpmailerException $e) {
-	LOGWrite("Error while sending e-mail with subject $subject to $toEmail ($toName): ".$e->errorMessage(),'LOG_ERROR');
+	LOGWrite("Error while sending e-mail with subject $subject to $toEmail ($toName): ".$e->errorMessage(),LOG_ERROR);
     } catch (Exception $e) {
-	LOGWrite("Error while sending e-mail with subject $subject to $toEmail ($toName): ".$e->errorMessage(),'LOG_ERROR');
+	LOGWrite("Error while sending e-mail with subject $subject to $toEmail ($toName): ".$e->errorMessage(),LOG_ERROR);
     }
     return false;
 }
@@ -517,23 +524,26 @@ function sendMail($toEmail, $toName, $subject, $message) {
 class Session {
     var $id;
     var $userId=false;
-    
+
     function __construct($ID) {
 	/* Cancella tutte le sessioni piu vecchie di 1 ora */
 	doQuery("DELETE FROM Sessions WHERE HOUR(TIMEDIFF(NOW(),lastAction)) > 1;");
-	/* Procedi... */
-	doQuery("INSERT INTO Sessions (ID,IP) VALUES ('$ID','".getClientIP()."') ON DUPLICATE KEY UPDATE lastAction=NOW();");
-	$this->id = $ID;
-	
-	$result = doQuery("SELECT userId FROM Sessions WHERE ID='$ID';");
-	if(mysqli_num_rows($result) > 0) {
-	    $row = mysqli_fetch_array($result,MYSQLI_ASSOC);
-	    $this->userId = $row["userId"];
-	} else {
-	    $this->userId = false;
+	/* Verifica che sia una sessione non di un agent... */
+	if(isset($_SERVER['HTTP_USER_AGENT'])&&(!preg_match('/nidan/',$_SERVER['HTTP_USER_AGENT']))) {
+	    /* Procedi... */
+	    doQuery("INSERT INTO Sessions (ID,IP,lastAction) VALUES ('$ID','".getClientIP()."',NOW()) ON DUPLICATE KEY UPDATE lastAction=NOW();");
+	    $this->id = $ID;
+
+	    $result = doQuery("SELECT userId FROM Sessions WHERE ID='$ID';");
+	    if(mysqli_num_rows($result) > 0) {
+		$row = mysqli_fetch_array($result,MYSQLI_ASSOC);
+	        $this->userId = $row["userId"];
+	    } else {
+		$this->userId = false;
+	    }
 	}
-    }   
-    
+    }
+
     function __destruct() {
     }
 
@@ -552,6 +562,33 @@ class Session {
     }
 }
 
+function IpInRange($ip,$range) {
+    if ( strpos( $range, '/' ) == false ) {
+	$range .= '/32';
+    }
+    // $range is in IP/CIDR format eg 127.0.0.1/24
+    list($range, $netmask) = explode( '/', $range, 2 );
+    $range_decimal = ip2long( $range );
+    $ip_decimal = ip2long( $ip );
+    $wildcard_decimal = pow( 2, ( 32 - $netmask ) ) - 1;
+    $netmask_decimal = ~ $wildcard_decimal;
+    return ( ( $ip_decimal & $netmask_decimal ) == ( $range_decimal & $netmask_decimal ) );
+}
+
+function getNetFromIP($ip) {
+    $result = doQuery("SELECT ID,Network FROM Networks;");
+    if(mysqli_num_rows($result) > 0) {
+        while($row = mysqli_fetch_array($result,MYSQLI_ASSOC)) {
+	    $net_mask = $row["Network"];
+	    $net_id = $row["ID"];
+	    if(IpInRange($ip,$net_mask)) {
+		return $net_id;
+	    }
+	}
+    }
+    return false;
+}
+
 class Config {
     function get($name) {
 	$result = doQuery("SELECT Value FROM Config WHERE Name='$name';");
@@ -562,7 +599,7 @@ class Config {
 	    return false;
 	}
     }
-    
+
     function set($name, $value) {
 	global $DB;
 	doQuery("INSERT INTO Config (Name,Value) VALUES ('".mysqli_real_escape_string($DB,$name)."','".mysqli_real_escape_string($DB,$value)."') ON DUPLICATE KEY UPDATE Value='".mysqli_real_escape_string($DB,$value)."';");
@@ -622,7 +659,7 @@ class User {
 	    return $this->eMail;
 	}
     }
-    
+
     /* Return value of specific ACL */
     public function getACL($name) {
     	return $this->ACL[$name];
@@ -713,7 +750,7 @@ class Host {
     var $addDate;
     var $stateChange;
     var $checkCycle;
-    
+
     function __construct($id=false) {
 	if($id) {
 	    $result = doQuery("SELECT ID,netId,agentId,IP,MAC,Vendor,Hostname,State,isOnline,lastCheck,scanTime,addDate,stateChange,checkCycle,chgDate FROM Hosts WHERE ID='$id';");
@@ -775,7 +812,7 @@ class Job {
 		$this->itemId = $row["itemId"];
 		$this->agentId = $row["agentId"];
 		$this->args = json_decode($row["Args"],true);
-		
+
 		$this->addDate = new DateTime($row["addDate"]);
 		$this->startDate = new DateTime($row["startDate"]);
 		$this->endDate = new DateTime($row["endDate"]);
@@ -817,21 +854,44 @@ class Job {
 	doQuery("UPDATE JobsQueue SET startDate=NOW(),agentId='$agent_id' WHERE ID='$this->id';");
     }
 
-    function setCache($cache_data=NULL) {
-	global $DB;
-	if(!empty($cache_data)) {
-	    doQuery("UPDATE JobsQueue SET Cache='".mysqli_real_escape_string($DB,serialize($cache_data))."' WHERE ID='$this->id';");
-	} else {
-	    doQuery("UPDATE JobsQueue SET Cache=NULL WHERE ID='$this->id';");
-	}
-    }
-
     function getCache() {
 	$result = doQuery("SELECT Cache FROM JobsQueue WHERE ID='$this->id';");
 	if(mysqli_num_rows($result) > 0) {
 	    $row = mysqli_fetch_array($result,MYSQLI_ASSOC);
-	    if(isset($row["Cache"])) {
+	    if(is_null($row["Cache"])) {
+		return NULL;
+	    } else {
 		return unserialize(stripslashes($row["Cache"]));
+	    }
+	}
+    }
+
+    function addCache($event) {
+	global $DB;
+
+	$cache = $this->getCache();
+	if(is_null($cache)) {
+	    $cache = array();
+	}
+	$cache[] = $event;
+
+	$tmp_data = mysqli_real_escape_string($DB,serialize($cache));
+	doQuery("UPDATE JobsQueue SET Cache='$tmp_data' WHERE ID='$this->id';");
+    }
+
+    function setSnapshot($snapshot_data) {
+	global $DB;
+	// Create item snapshot
+	$snapshot_data = mysqli_real_escape_string($DB,serialize($snapshot_data));
+	doQuery("INSERT INTO Snapshots(itemId,itemType,itemData,addDate) VALUES ('$this->itemId','$this->job','$snapshot_data',NOW());");
+    }
+
+    function getLastSnapshot() {
+	$result = doQuery("SELECT itemData FROM Snapshots WHERE ID='$this->itemId' AND itemType='$this->job' ORDER BY addDate LIMIT 1;");
+	if(mysqli_num_rows($result) > 0) {
+	    $row = mysqli_fetch_array($result,MYSQLI_ASSOC);
+	    if(isset($row["itemData"])) {
+		return unserialize(stripslashes($row["itemData"]));
 	    } else {
 		return false;
 	    }
@@ -865,6 +925,10 @@ class Agent {
     var $name;
     var $apiKey;
     var $description;
+    var $IP;
+    var $hostName;
+    var $Version;
+    var $Plugins;
     var $isEnable;
     var $isOnline;
     var $addDate;
@@ -872,13 +936,17 @@ class Agent {
 
     function __construct($id=false) {
 	if($id) {
-	    $result = doQuery("SELECT ID,Name,apiKey,Description,isEnable,isOnline,addDate,lastSeen FROM Agents WHERE ID='$id';");
+	    $result = doQuery("SELECT ID,Name,apiKey,Description,IP,Hostname,Version,Plugins,isEnable,isOnline,addDate,lastSeen FROM Agents WHERE ID='$id';");
 	    if(mysqli_num_rows($result) > 0) {
 		$row = mysqli_fetch_array($result,MYSQLI_ASSOC);
 		$this->id = $row["ID"];
 		$this->name = stripslashes($row["Name"]);
 		$this->apiKey = stripslashes($row["apiKey"]);
 		$this->description = stripslashes($row["Description"]);
+		$this->IP = (is_null($row["IP"]) ? false:$row["IP"]);
+	        $this->hostName = $row["Hostname"];
+	        $this->Version = $row["Version"];
+		$this->Plugins = json_decode($row["Plugins"],true);
 		$this->isEnable = $row["isEnable"];
 		$this->isOnline = $row["isOnline"];
 		$this->addDate = new DateTime($row["addDate"]);
@@ -892,59 +960,82 @@ class Agent {
 	}
     }
 
+    function isAble($action) {
+	/* Check if this agent in able to do $action job */
+	if(in_array($action,$this->Plugin)) {
+	    return true;
+	} 
+	return false;
+    }
+
     function getNextJob() {
 	/* First check if there are jobs for this agent... */
-	$result = doQuery("SELECT ID FROM JobsQueue WHERE NOW() > scheduleDate AND startDate IS NULL AND endDate IS NULL AND (agentId='$this->id' OR agentId=0) ORDER BY addDate LIMIT 1;");
+	$result = doQuery("SELECT ID,Job FROM JobsQueue WHERE NOW() > scheduleDate AND startDate IS NULL AND endDate IS NULL AND (agentId='$this->id' OR agentId=0) ORDER BY addDate;");
 	if(mysqli_num_rows($result) > 0) {
-	    $row = mysqli_fetch_array($result,MYSQLI_ASSOC);
-	    $job_id = $row["ID"];
-	    return $job_id;
-	} else {
-	    return false;
+	    while($row = mysqli_fetch_array($result,MYSQLI_ASSOC)) {
+		$job_id = $row["ID"];
+		$job = $row["Job"];
+		if($this->isAble($job)) {
+		    return $job_id;
+		}
+	    }
 	}
+	return false;
     }
 
 }
 
 function compareArray($new, $old) {
-    $added = array_diff_assoc($new, $old);
-    $removed = array_diff_assoc($old, $new);
+    if(is_array($new)&&is_array($old)) {
+	$added = array_diff_assoc($new, $old);
+	$removed = array_diff_assoc($old, $new);
 
-    $result = array();
+	$result = array();
 
-    foreach($added as $item) {
-	$result[] = array("added" => $item);
+	foreach($added as $item) {
+	    $result[] = array("added" => $item);
+	}
+
+	foreach($removed as $item) {
+	    $result[] = array("removed" => $item);
+	}
+
+	return $result;
+    } else {
+	return false;
     }
-
-    foreach($removed as $item) {
-	$result[] = array("removed" => $item);
-    }
-    
-    return $result;
 }
 
 ////////////////////////////////////////////////////////
 //
 // When something happens, this function will be called...
 //
-function raiseEvent($agent_id,$job_id,$event,$args=NULL) {
+function addEvent($job_id=NULL,$event,$args=NULL) {
     global $DB;
-    
-    if($args) {
-	$argsArray = json_encode($args);
+
+    if(is_null($args)) {
+	$args_array = "NULL";
     } else {
-	$argsArray = FALSE;
+	$args_array = "'".mysqli_real_escape_string($DB,json_encode($args))."'";
     }
 
-    LOGWrite("Event '$event' raised by agent $agent_id for job $job_id");
+    LOGWrite("Event '$event' for job $job_id");
+
+    if($job_id > 0) {
+
+    } else {
+	$job_id = "NULL";
+    }
 
     // Add event to queue...
-    if($argsArray) {
-        doQuery("INSERT INTO EventsLog(addDate,agentId,jobId,Event,Args) VALUES (NOW(),'$agent_id','$job_id','".mysqli_real_escape_string($DB,$event)."','$argsArray');");
-    } else {
-        doQuery("INSERT INTO EventsLog(addDate,agentId,jobId,Event,Args) VALUES (NOW(),'$agent_id','$job_id','".mysqli_real_escape_string($DB,$event)."',NULL);");
-    }
+    doQuery("INSERT INTO EventsLog(addDate,jobId,Event,Args) VALUES (NOW(),$job_id,'".mysqli_real_escape_string($DB,$event)."',$args_array);");
+    return mysqli_insert_id($DB);
 }
+
+////////////////////////////////////////////////////////
+//
+// TCP/UDP Port definitions and relevancy
+//
 
 $tcp_services = array(
     "1/tcp" => array("desc" => "TCP Multiplexor", "relevancy" => 1),

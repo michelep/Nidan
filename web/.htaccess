@@ -11,6 +11,7 @@
     RewriteRule ^profile(/([^/]*))?$ profile.php
     RewriteRule ^signin(/([^/]*))?$ signin.php
     RewriteRule ^ajax(/([^/]*))?$ ajaxCb.php
+    RewriteRule ^inbox(/([^/]*))?$ inbox.php
 
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteCond %{REQUEST_FILENAME} !-d

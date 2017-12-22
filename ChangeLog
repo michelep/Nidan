@@ -1,3 +1,13 @@
+0.0.2 - 22 Dec 2017 - Merry Xmas !
+* [Web Gui] Added Inbox for event notifications (added in trigger too)
+* [Web Gui] Some improvements with search by IP
+* [Web Gui] Hostname defined in configuration
+* [Web Gui] Lot of changes and bug fixes
+* [DB] Changes in Agents table
+* [Agent] Some minor cleanups
+* [Agent] Added arp sniffer agent (beta)
+* [Agent] Start working on plugin capabilities for agents
+
 0.0.1 - 18 Oct 2017
 * [Web Gui] Installer improved
 * [Web Gui] Some minor fixes and improvements
@@ -14,7 +24,7 @@
 * [Web Gui] Fix notification and some other minor bugs
 * [Web Gui] Added cleanup for old events
 * [Web Gui] Fix some bugs in users management
-* [Web Gui] Version check 
+* [Web Gui] Version check
 * [Agent] Added multithreading parallel scanning (define threads_max in config file)
 * [Agent] Removed daemonizing support, because of signaling issue
 * [DB] Added new fields in Config and JobsQueue tables

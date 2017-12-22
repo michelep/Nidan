@@ -22,6 +22,21 @@ function checkJSON(field, rules, i, options) {
     }
 }
 
+// ========================================================================================
+function checkInbox() {
+  $.ajax({
+    url: '/ajaxCb?action=inbox_check',
+    success: function(data) {
+	$('#inbox_new_badge').html(data);
+    }
+  });
+  setTimeout(checkInbox, 10000); /* Every ten seconds */
+}
+
+
+jQuery(document).ready(function($) {
+});
+
 // ========================================================================================= AJAXDIALOG
 $(function (){
     $('.ajaxDialog').click(function(e) {
@@ -84,5 +99,23 @@ $(function (){
 $(document).ready(function() {
     $( "input[type=submit], button" ).button();
 
+    checkInbox();
+
+    $(".ajax-clickable").click(function() {
+        var url = this.getAttribute('data-href');
+        var title = this.getAttribute('data-title');
+
+	$('.modal-title').html(title);
+	$('#inbox-modal').modal('show');
+
+	$.ajax({
+    	    url: url,
+	    dataType: "html"
+	}).done(function(data) {
+	    $('.modal-body').html(data)
+	});
+    });
+
     jQuery('form').validationEngine();
 });
+

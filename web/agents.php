@@ -1,4 +1,4 @@
-<?php 
+<?php
 
 include_once "common.inc.php";
 
@@ -9,7 +9,7 @@ if(!$mySession->isLogged()) {
 
 $pageTitle = "All agents";
 
-include "common_head.php"; 
+include "common_head.php";
 
 include_once "common_sidebar.php";
 
@@ -21,18 +21,38 @@ if(!empty($_GET["id"])) {
 
 ?>
 <main class="col-sm-9 offset-sm-3 col-md-10 offset-md-2 pt-3" id="contentDiv">
+    <h2><i class="fa fa-bullseye" aria-hidden="true"></i> Agents</h2>
 <?php
 if(isset($agent_id)) {
+    $agent = new Agent($agent_id);
 ?>
-    <div class="panel panel-default">
-	<div class="panel-heading"><h2>Agent <?php echo "$agent->name"; ?> details</h2></div>
-	<div class="panel-body">
-	    <p>
-		Added on <?php echo $agent->addDate->format("H:i:s d-M-Y"); ?>
-	    </p><p>
-		Last seen on <?php echo ($agent->lastSeen ? $agent->lastSeen->format("H:i:s d-M-Y"):"Never"); ?>
+    <div class="card text-center">
+	<div class="card-header">
+	    <h2>Agent "<?php echo "$agent->name"; ?>"</h2>
+	</div>
+	<div class="card-body">
+	    <p class="text-left">
+          Api Key: <?php echo $agent->apiKey; ?><br/>
+          Description: <?php echo $agent->description; ?><br/>
+          Plugins:
+          <?php
+          if($agent->Plugins) {
+            foreach($agent->Plugins as $plugin) {
+              echo "<b>$plugin</b>&nbsp;";
+            }
+          } else {
+            echo "no plugins";
+          }
+          ?><br/>
+          IP: <?php echo $agent->IP." (".$agent->hostName.")"; ?>
+	    </p><p class="text-left">
+		<a href="/agents" class="btn btn-primary">Back</a>
 	    </p>
 	</div>
+	<div class="card-footer text-muted">
+	    Added on <?php echo $agent->addDate->format("H:i:s d-M-Y"); ?>, last seen on <?php echo ($agent->lastSeen ? $agent->lastSeen->format("H:i:s d-M-Y"):"Never"); ?>
+	</div>
+    </div>
 <?php
 } else {
 ?>
@@ -45,12 +65,12 @@ if(isset($agent_id)) {
 		<th>IP</th>
 		<th>Hostname</th>
 		<th>Last Seen</th>
-		<th>Added on</th>
+		<th>Run time</th>
 		<th></th>
 	    </tr>
 	</thead><tbody>
 <?php
-	$result = doQuery("SELECT ID,Name,Description,IP,Hostname,isEnable,isOnline,addDate,TIMESTAMPDIFF(MINUTE,lastSeen,NOW()) AS lastSeen FROM Agents ORDER BY addDate;");
+	$result = doQuery("SELECT ID,Name,Description,IP,Hostname,isEnable,isOnline,addDate,TIMESTAMPDIFF(MINUTE,lastSeen,NOW()) AS lastSeen,TIMESTAMPDIFF(HOUR,startDate,lastSeen) AS runTime FROM Agents ORDER BY addDate;");
 	if(mysqli_num_rows($result) > 0) {
 	    while($row = mysqli_fetch_array($result,MYSQLI_ASSOC)) {
 		$agent_id = $row["ID"];
@@ -61,9 +81,16 @@ if(isset($agent_id)) {
 		$agent_is_enable = $row["isEnable"];
 		$agent_adddate = new DateTime($row["addDate"]);
 
-		$agent_status = "fa-times text-danger";
-		if($row["isOnline"] == 1) {
-		    $agent_status = "fa-circle-o text-success";
+		$agent_runtime = NULL;
+
+		if($agent_is_enable) {
+		    $agent_status = "fa-times text-danger";
+		    if($row["isOnline"] == 1) {
+			$agent_status = "fa-circle text-success";
+			$agent_runtime = $row["runTime"];
+		    }
+		} else {
+		    $agent_status = "fa-pause-circle text-warning";
 		}
 
 		$agent_lastseen = getHumanETA($row["lastSeen"]);
@@ -74,8 +101,8 @@ if(isset($agent_id)) {
 		    <td>$agent_description</td>
 		    <td>$agent_ip</td>
 		    <td>$agent_hostname</td>
-		    <td>$agent_lastseen</td>
-		    <td>".$agent_adddate->format("H:i:d d:M:Y")."</td>
+		    <td>$agent_lastseen ago</td>
+		    <td>".(is_null($agent_runtime)?"Offline":getHumanETA($agent_runtime))."</td>
 		    <td>";
 		if($myUser->getACL('manageAgents')) {
 		    echo "<a class='ajaxDialog' title='Edit agent' href='/ajax?action=agent_edit&id=$agent_id'><i class='fa fa-pencil-square' aria-hidden='true'></i></a>";
@@ -101,8 +128,8 @@ if(isset($agent_id)) {
 ?>
 </main>
 
-<?php 
+<?php
 
-include "common_foot.php"; 
+include "common_foot.php";
 
 ?>

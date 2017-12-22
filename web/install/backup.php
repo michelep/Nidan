@@ -1,5 +1,7 @@
 <?php
 
+// A comfortable script to backup your nidan database
+
 include __DIR__."/../common.inc.php";
 
 $filename = "backup-" . date("d-m-Y") . ".sql";

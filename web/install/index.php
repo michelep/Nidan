@@ -29,6 +29,44 @@ function do_query($query) {
     return $result;
 }
 
+function sql_import($file) {
+    $sql_line = '';
+    $lines = file($file);
+    if($lines == false ) {
+	echo "<div class='alert alert-warning'>
+	    Unable to open $file file: please check and try again
+	</div>";
+	return false;
+    }
+    
+    $c=0;
+
+    foreach ($lines as $line) {
+	$c++;
+        // Skip comments
+        if(substr($line, 0, 2) == '--' || $line == '') {
+    	    continue;
+	}
+	// Add this line to the current segment
+	$sql_line .= $line;
+	// If it has a semicolon at the end, it's the end of the query
+	if(substr(trim($line), -1, 1) == ';') {
+	    // Perform the query
+	    if($result = do_query($sql_line)) {
+	        // Reset temp variable to empty
+		$sql_line = '';
+	    } else {
+	        echo "<div class='alert alert-error'>
+	    	Ooops ! An error occourred while executing '$sql_line' (Line: $c): ".$mysqli->error."
+	    	</div>";
+		break;
+	    }
+	}
+    }
+    return true;
+}
+
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -78,38 +116,12 @@ if(isset($_POST["step"])) {
 	    echo "<div class='alert alert-success'>
 		<strong>Well done!</strong> Successfully connected to the DB. Now import tables...
 	    </div>";
-	    //
-	    $sql_line = '';
-	    $lines = file(__DIR__.'/nidan.sql');
-	    if($lines == false ) {
-		echo "<div class='alert alert-warning'>
-		    Unable to open nidan.sql file: please check and try again
-		</div>";
-	    } else {
-		foreach ($lines as $line) {
-		    // Skip comments
-		    if(substr($line, 0, 2) == '--' || $line == '') {
-			continue;
-		    }
-		    // Add this line to the current segment
-		    $sql_line .= $line;
-	    	    // If it has a semicolon at the end, it's the end of the query
-		    if(substr(trim($line), -1, 1) == ';') {
-			// Perform the query
-			if($result = do_query($sql_line)) {
-			    // Reset temp variable to empty
-		    	    $sql_line = '';
-			} else {
-			    echo "<div class='alert alert-error'>
-				Ooops ! An error occourred while executing '$sql_line': ".$mysqli->error."
-		    	    </div>";
-			    break;
-			}
-		    }
+	    if(sql_import(__DIR__.'/nidan.sql')) {
+		if(sql_import(__DIR__.'/nidan_data.sql')) {
+		    echo "<div class='alert alert-success'>
+	    		<strong>That's all !</strong> Now you can login to <a href='/'>Nidan</a> using 'admin@localhost' as username and 'admin' as password. Remember to change it ;-)
+		    </div>";
 		}
-		echo "<div class='alert alert-success'>
-		    <strong>That's all !</strong> Now you can login to <a href='/'>Nidan</a> using 'admin@localhost' as username and 'admin' as password. Remember to change it ;-)
-		</div>";
 	    }
 	}
     }

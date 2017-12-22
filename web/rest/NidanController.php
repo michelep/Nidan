@@ -44,14 +44,15 @@ class NidanController
 	if($this->agent_id) {
 	    $hostname = mysqli_real_escape_string($DB,$_POST["hostname"]);
 	    $version = mysqli_real_escape_string($DB,$_POST["version"]);
+	    $plugins = explode(',',$_POST["plugins"]); /* Agent plugins, comma-separated values */
 
-	    doQuery("UPDATE Agents SET isOnline=1,IP='".getClientIP()."',Hostname='$hostname',Version='$version' WHERE ID='$this->agent_id';");
+	    doQuery("UPDATE Agents SET isOnline=1,IP='".getClientIP()."',Hostname='$hostname',Version='$version',Plugins='".json_encode($plugins)."',startDate=NOW(),stopDate=NULL WHERE ID='$this->agent_id';");
 
 	    // Mark as not started staled JOBs for this agent...
 	    doQuery("UPDATE JobsQueue SET startDate=NULL WHERE agentId='$this->agent_id' AND endDate IS NULL");
 	
-	    $args = array('hostname' => $hostname, 'ip' => getClientIP());
-	    raiseEvent($this->agent_id,NULL,"agent_start",$args);
+	    $args = array('hostname' => $hostname, 'ip' => getClientIP(), 'agent_id' => $this->agent_id);
+	    addEvent(NULL,"agent_start",$args);
 
 	    return array("success" => "OK");
 	} else {
@@ -74,10 +75,10 @@ class NidanController
 	if($this->agent_id) {
 	    $reason = mysqli_real_escape_string($DB,$_POST["reason"]);
 	    
-	    doQuery("UPDATE Agents SET isOnline=0 WHERE ID='$this->agent_id';");
+	    doQuery("UPDATE Agents SET isOnline=0,stopDate=NOW() WHERE ID='$this->agent_id';");
 
-	    $args = array('reason' => $reason, 'ip' => getClientIP());
-	    raiseEvent($this->agent_id,NULL,"agent_stop",$args);
+	    $args = array('reason' => $reason, 'ip' => getClientIP(),'agent_id' => $this->agent_id);
+	    addEvent(NULL,"agent_stop",$args);
 
 	    return array("success" => "OK");
 	} else {
@@ -112,14 +113,14 @@ class NidanController
 		    // If it's a network scan, ON START take a snapshot of the situation for latter comparison...
 		    if($job->job == "net_scan") {
 			$network = new Network($job->itemId);
-			$job->setCache($network->getHosts());
+			$job->setSnapshot($network->getHosts());
 		    }
 		    // ...or, if it's an host scan, take a services snapshots
 		    if($job->job == "host_scan") {
 			$host = new Host($job->itemId);
-			$job->setCache($host->getServices());
+			$job->setSnapshot($host->getServices());
 		    }
-		    raiseEvent($this->agent_id,$job->id,"job_start");
+		    addEvent($job->id,"job_start",array('agent_id' => $this->agent_id));
 
 		    return array("success" => "$job_id", "job_id"=> $job->id, "job_type" => $job->job, "job_args" => $job->args);
 	        } else {
@@ -155,7 +156,7 @@ class NidanController
 //		    	REST::job_set(2087)::array (#012  'status' => 'error',#012  'reason' => '<traceback object at 0x7f7d8dcc5a28>',#012)
 			case 'error':
 			    $reason = sanitize($_POST["reason"]);
-			    raiseEvent($this->agent_id,$job->id,"job_error",array("reason" => $reason));
+			    addEvent($job->id,"job_error",array('agent_id' => $this->agent_id,'reason' => $reason));
 			    break;
 		        case 'complete':
 // 			REST::job_set(1034)::array (#012  'status' => 'complete',#012  'scantime' => '0.521373987198',#012)
@@ -167,14 +168,16 @@ class NidanController
 				doQuery("UPDATE Networks SET scanTime='$scantime',lastCheck=NOW() WHERE ID='$job->itemId';");
 				// Retrieve previous scenario
 				$network = new Network($job->itemId);
-				$old_net_scenario = $job->getCache();
+				$old_net_scenario = $job->getLastSnapshot();
 				$new_net_scenario = $network->getHosts();
 
 				if(($old_net_scenario) && ($new_net_scenario)) {
 				    $arr_res = compareArray($new_net_scenario,$old_net_scenario);
 				    if(count($arr_res) > 0) {
 					LOGWrite("REST::net_scan_compare::".var_export($arr_res, true),LOG_DEBUG);
-					raiseEvent($this->agent_id,$job->id,"net_change",array("changes" => $arr_res));
+					$args = array('id' => $network->id, 'network' => $network->network, 'diff' => $arr_res);
+				        addEvent($job->id,"net_change",$args);
+					// $job->addCache($args);
 				    } else {
 					LOGWrite("REST::net_scan_compare::NO CHANGES",LOG_DEBUG);
 				    }
@@ -187,14 +190,16 @@ class NidanController
 				doQuery("UPDATE Hosts SET scanTime='$scantime',lastCheck=NOW() WHERE ID='$job->itemId';");
 				// Retrieve previous scenario
 				$host = new Host($job->itemId);
-				$old_host_scenario = $job->getCache();
+				$old_host_scenario = $job->getLastSnapshot();
 				$new_host_scenario = $host->getServices();
 
 				if(($old_host_scenario) && ($new_host_scenario)) {
 				    $arr_res = compareArray($new_host_scenario,$old_host_scenario);
 				    if(count($arr_res) > 0) {
 					LOGWrite("REST::host_scan_compare::".var_export($arr_res, true),LOG_DEBUG);
-					raiseEvent($this->agent_id,$job->id,"host_change",array("changes" => $arr_res));
+					$args = array('id' => $host->id, 'hostname' => $host->hostname, 'ip' => $host->ip, 'diff' => $arr_res);
+				        addEvent($job->id,"host_change",$args);
+					// $job->addCache($args);
 				    } else {
 					LOGWrite("REST::host_scan_compare::NO CHANGES",LOG_DEBUG);
 				    }
@@ -203,7 +208,7 @@ class NidanController
 				}
 			    }
 			    // and finally, raise event !
-			    raiseEvent($this->agent_id,$job->id,"job_end");
+			    addEvent($job->id,"job_end",array('agent_id' => $agent->id));
 			    break;
 			default:
 			    break;
@@ -233,53 +238,110 @@ class NidanController
 	    $agent = new Agent($this->agent_id);
 	    
 	    if($agent) {
-		$job_id = sanitize($_POST["job_id"]);
+		$ip = sanitize($_POST["ip"]); /* IP is mandatory ! */
+		$hostname = (isset($_POST["hostname"])?sanitize($_POST["hostname"]):NULL);
+		$mac = (isset($_POST["mac"])?sanitize($_POST["mac"]):NULL);
+		$vendor = (isset($_POST["vendor"])?sanitize($_POST["vendor"]):NULL);
+		$state = (isset($_POST["state"])?sanitize($_POST["state"]):NULL);
 
-		$ip = sanitize($_POST["ip"]);
-		$hostname = sanitize($_POST["hostname"]);
-		$mac = sanitize($_POST["mac"]);
-		$vendor = sanitize($_POST["vendor"]);
-		$state = sanitize($_POST["state"]);
+		$job_id = (isset($_POST["job_id"])?sanitize($_POST["job_id"]):NULL);
 
-		$job = new Job($job_id);
-		// $job->itemId contains netId
-		if($job) {
-		    /* Check if this host is new or not... */
-		    $result = doQuery("SELECT ID FROM Hosts WHERE netId='$job->itemId' AND IP='$ip';");
+		if($job_id > 0) {
+		    // Event related to JOB $job_id...
+		    $job = new Job($job_id);
+	    	    // $job->itemId contains netId
+	    	    if($job->itemId) {
+			/* Check if this host is new or not... */
+			$result = doQuery("SELECT ID FROM Hosts WHERE netId='$job->itemId' AND IP='$ip';");
+			if(mysqli_num_rows($result) > 0) {
+			    /* Host already there: check for changes */
+			    $row = mysqli_fetch_array($result,MYSQLI_ASSOC);
+			    $host = new Host($row["ID"]);
+			    // Prepare array for comparison...
+			    $new_host["hostname"] = (is_null($hostname)?$host->hostname:$hostname);
+			    $new_host["mac"] = (is_null($mac)?$host->mac:$hostname);
+			    $new_host["vendor"] = (is_null($vendor)?$host->hostname:$vendor);
+			    $new_host["state"] = (is_null($hostname)?$host->state:$state);
+		    
+			    $old_host["hostname"] = $host->hostname;
+			    $old_host["mac"] = $host->mac;
+			    $old_host["vendor"] = $host->vendor;
+			    $old_host["state"] = $host->state;
+
+			    $arr_res = compareArray($new_host,$old_host);
+			    if(count($arr_res) > 0) {
+				//Something has changed...so add this event in cache !
+				$args = array('id' => $host->id, 'hostname' => $host->hostname, 'ip' => $host->ip, 'diff' => $arr_res);
+				addEvent($job->id,"host_change",$args);
+				// And update HOST entry with new values...
+				doQuery("UPDATE Hosts SET MAC='".$new_host["mac"]."',Vendor='".$new_host["vendor"]."',Hostname='".$new_host["hostname"]."',State='".$new_host["state"]."',stateChange=NOW() WHERE IP='$ip';");
+			    }
+			    return array("success" => "OK");
+			} else {
+			    // New host: add to DB
+			    doQuery("INSERT INTO Hosts(netId,agentId,IP,MAC,Vendor,Hostname,State,isOnline,addDate,stateChange,checkCycle) VALUES ('$job->itemId','$this->agent_id','$ip','$mac','$vendor','$hostname','$state','1',NOW(),NOW(),10);");
+			    $host_id = mysqli_insert_id($DB);
+			    if($host_id > 0) {
+				// Prepare to add this event in the cache...
+				$args = array('id' => $host_id, 'hostname' => $hostname, 'ip' => $ip);
+				addEvent($job->id,"new_host",$args);
+				// $job->addCache($args);
+			    }
+			    return array("success" => "OK");
+			}
+		    } else {
+			throw new RestException(500, "Job ID Error");
+		    }
+		} else {
+		    /* This event was not related to a JOB, i.e. ARP sniffing or so on.. */
+		    $result = doQuery("SELECT ID FROM Hosts WHERE IP='$ip';");
 		    if(mysqli_num_rows($result) > 0) {
 			/* Host already there: check for changes */
 			$row = mysqli_fetch_array($result,MYSQLI_ASSOC);
 			$host = new Host($row["ID"]);
-			// Prepare array for comparison...
-			$old_host["hostname"] = $hostname;
-			$old_host["mac"] = $mac;
-			$old_host["vendor"] = $vendor;
-			$old_host["state"] = $state;
-		    
-			$new_host["hostname"] = $host->hostname;
-			$new_host["mac"] = $host->mac;
-			$new_host["vendor"] = $host->vendor;
-			$new_host["state"] = $host->state;
-
+			// Prepare array for comparison, only for available fields...
+			if(!is_null($hostname)) {
+			    $old_host["hostname"] = $hostname;
+			    $new_host["hostname"] = $host->hostname;
+			}
+			if(!is_null($mac)) {
+			    $old_host["mac"] = $mac;
+			    $new_host["mac"] = $host->mac;
+			}
+			if(!is_null($vendor)) {
+			    $old_host["vendor"] = $vendor;
+			    $new_host["vendor"] = $host->vendor;
+			}
+			if(!is_null($state)) {
+			    $old_host["state"] = $state;
+			    $new_host["state"] = $host->state;
+			}
 			$arr_res = compareArray($new_host,$old_host);
 			if(count($arr_res) > 0) {
-			    //Something has changed...so raise event !
-			    raiseEvent($this->agent_id,$job_id,"host_change",$arr_res);
+			    //Something has changed...so add this event in cache !
+			    $args = array('id' => $host->id, 'hostname' => $host->hostname, 'ip' => $host->ip, 'diff' => $arr_res);
+			    addEvent(NULL,"host_change",$args);
+			    // and update host entry with new values
+			    doQuery("UPDATE Hosts SET MAC='$mac',Vendor='$vendor',Hostname='$hostname',State='$state',stateChange=NOW() WHERE IP='$ip';");
 			}
 			return array("success" => "OK");
 		    } else {
-			// New host: add to DB
-			doQuery("INSERT INTO Hosts(netId,agentId,IP,MAC,Vendor,Hostname,State,isOnline,addDate,stateChange,checkCycle) VALUES ('$job->itemId','$this->agent_id','$ip','$mac','$vendor','$hostname','$state','1',NOW(),NOW(),10);");
-			$host_id = mysqli_insert_id($DB);
-			if($host_id > 0) {
-			    // Prepare to raise event...
-			    $args = array('id' => $host_id, 'hostname' => $hostname, 'ip' => $ip);
-			    raiseEvent($this->agent_id,$job_id,"new_host",$args);
+			/* Detect Net ID from host IP */
+			$net_id = getNetFromIP($ip);
+			if($net_id) {
+			    // New host: add to DB
+			    doQuery("INSERT INTO Hosts(netId,agentId,IP,MAC,Vendor,Hostname,State,isOnline,addDate,stateChange,checkCycle) VALUES ('$net_id','$this->agent_id','$ip','$mac','$vendor','$hostname','$state','1',NOW(),NOW(),10);");
+			    $host_id = mysqli_insert_id($DB);
+			    if($host_id > 0) {
+				// Prepare to add this event in the cache...
+				$args = array('id' => $host_id, 'hostname' => $hostname, 'ip' => $ip);
+				addEvent(NULL,"new_host",$args);
+			    }
+			} else {
+
 			}
 			return array("success" => "OK");
 		    }
-		} else {
-		    throw new RestException(500, "Job ID Error");
 		}
 	    } else {
 	        throw new RestException(500, "Agent Error");
@@ -321,6 +383,7 @@ class NidanController
 		    if(mysqli_num_rows($result) > 0) {
 			// Seems that this service was already there: check for changes
 			$row = mysqli_fetch_array($result,MYSQLI_ASSOC);
+			$service_id = $row["ID"];
 			$old_service["state"] = $row["State"];
 			$old_service["banner"] = stripslashes($row["Banner"]);
 
@@ -330,7 +393,9 @@ class NidanController
 			$arr_res = compareArray($new_service,$old_service);
 			if(count($arr_res) > 0) {
 			    //Something has changed...so raise event !
-			    raiseEvent($this->agent_id,$job_id,"service_change",$arr_res);
+			    $args = array('id' => $service_id, 'port' => $port, 'proto' => $proto, 'state' => $state, 'banner' => $banner);
+			    addEvent($job->id,"service_change",$args);
+			    // $job->addCache($args);
 			}
 
 			return array("success" => "OK");
@@ -341,12 +406,46 @@ class NidanController
 
 			if($service_id > 0) {
 			    // Prepare to raise event..
-			    $args = array('id' => $service_id, 'port' => $port, 'proto' => $proto, 'state' => $state);
-			    raiseEvent($this->agent_id,$job_id,"new_service",$args);
+			    $args = array('id' => $service_id, 'port' => $port, 'proto' => $proto, 'state' => $state, 'banner' => $banner);
+			    addEvent($job->id,"new_service",$args);
+			    // $job->addCache($args);
 			}
 
 			return array("success" => "OK");
 		    }
+		} else {
+		    throw new RestException(500, "Job ID Error");
+		}
+	    } else {
+	        throw new RestException(500, "Agent Error");
+	    }
+	} else {
+	    throw new RestException(403, "Access denied");
+	}
+    }
+    /**
+     * SNMP get - Called when an agent found an SNMP public response on an host
+     *
+     * @url POST /snmp/get
+     */
+    public function snmp_get() {
+	global $DB;
+
+	LOGWrite("REST::snmp_get()::".var_export($_POST, true),LOG_DEBUG);
+
+	if($this->agent_id) {
+	    $agent = new Agent($this->agent_id);
+	    
+	    if($agent) {
+		$job_id = sanitize($_POST["job_id"]);
+
+		$ip = sanitize($_POST["ip"]);
+
+		$job = new Job($job_id);
+		// $job->itemId contains hostId
+		if($job) {
+
+		    return array("success" => "OK");
 		} else {
 		    throw new RestException(500, "Job ID Error");
 		}
