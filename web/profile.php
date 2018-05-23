@@ -24,6 +24,7 @@ $myUser = new User($mySession->userId);
 	<form method="POST">
 	    <input type="hidden" name="action" value="cb_account_edit">
 	    <input type="hidden" name="user_id" value="<?php echo $mySession->userId; ?>">
+	    <input type="hidden" name="nonce" value="<?php echo $mySession->getNonce(); ?>">
 	    <div class="panel-body">
 		<div class="form-group">
 		    <label for="user-email">E-Mail</label>

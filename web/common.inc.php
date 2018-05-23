@@ -374,9 +374,9 @@ if(!empty($post_action)) {
 		$account_password_val = sanitize($_POST["user_password_val"]);
 		$account_alias = sanitize($_POST["user_alias"]);
 
-		if(strlen($account_password > 0)) {
+		if(strlen($account_password) > 0) {
 		    if(strcmp($account_password,$account_password_val)==0) {
-			doQuery("UPDATE Users SET Name='$account_name','Password'='$account_password',Email='$account_email',Alias='$account_alias' WHERE ID='$account_id';");
+			doQuery("UPDATE Users SET Name='$account_name',`Password`=PASSWORD('$account_password'),Email='$account_email',Alias='$account_alias' WHERE ID='$account_id';");
 			$mySession->sendMessage("Account $account_id updated successfully !");
 		    } else {
 			$mySession->sendMessage("Password don't match: try again !","error");
