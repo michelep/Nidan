@@ -1,3 +1,15 @@
+0.0.3 - 22 May 2018
+* [Web Gui] Start internationalization
+* [Web Gui] Move to Boostrap 4.1 and Charts.js 2.7.1
+* [Web Gui] Added user groups management
+* [Web Gui] Improved host page
+* [Web Gui] Adding custom events to hosts, like issue, changes and so on
+* [Web Gui] Minor fixed and cleanups
+* [Agent Arp] Added hostname resolution for detected hosts
+* [DB} Added Groups table
+* [DB] Added UserGroups table
+* [DB] Added HostsLog table for host related events
+
 0.0.2 - 22 Dec 2017 - Merry Xmas !
 * [Web Gui] Added Inbox for event notifications (added in trigger too)
 * [Web Gui] Some improvements with search by IP

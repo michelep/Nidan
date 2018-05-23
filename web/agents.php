@@ -105,7 +105,7 @@ if(isset($agent_id)) {
 		    <td>".(is_null($agent_runtime)?"Offline":getHumanETA($agent_runtime))."</td>
 		    <td>";
 		if($myUser->getACL('manageAgents')) {
-		    echo "<a class='ajaxDialog' title='Edit agent' href='/ajax?action=agent_edit&id=$agent_id'><i class='fa fa-pencil-square' aria-hidden='true'></i></a>";
+		    echo "<a class='ajaxDialog' title='Edit agent' href='/ajax?action=agent_edit&id=$agent_id'><i class='fa fa-pen-square' aria-hidden='true'></i></a>";
 		}
 		echo "</td></tr>";
 	    }

@@ -23,13 +23,13 @@ include_once "common_sidebar.php";
 		<i class='fa fa-refresh fa-spin fa-3x fa-fw'></i><span class='sr-only'>Loading...</span>
 	    </div>
 	    <div class="modal-footer">
-	        <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+	        <button class="btn" data-dismiss="modal" aria-hidden="true"><?php echo _("Close"); ?></button>
 	    </div>
 	</div>
     </div>
 </div>
 <main class="col-sm-9 offset-sm-3 col-md-10 offset-md-2 pt-3" id="contentDiv">
-    <h2><i class="fa fa-envelope-o" aria-hidden="true"></i> Inbox</h2>
+    <h2><i class="fa fa-envelope-o" aria-hidden="true"></i><?php echo _("Inbox"); ?></h2>
     <div class="row">
 	<table class="table table-hover">
 	    <thead>
@@ -54,9 +54,9 @@ include_once "common_sidebar.php";
 	    $result = doQuery("SELECT ID FROM Inbox WHERE userId=$myUser->id;");
 	    $total_rows = mysqli_num_rows($result);
 
-	    $result = doQuery("SELECT ID, Title, Content, isRead, addDate FROM Inbox WHERE userId=$myUser->id ORDER BY addDate DESC LIMIT 10 OFFSET $row_offs;");
+	    $result = doQuery("SELECT ID,Title,Content,isRead,addDate FROM Inbox WHERE userId='$myUser->id' ORDER BY addDate DESC LIMIT 10 OFFSET $row_offs;");
 	    if(mysqli_num_rows($result) > 0) {
-		while($row = mysqli_fetch_array($result,MYSQL_ASSOC)) {
+		while($row = mysqli_fetch_array($result,MYSQLI_ASSOC)) {
 		    $inbox_id = $row["ID"];
 		    $inbox_title = stripslashes($row["Title"]);
 		    $inbox_content = stripslashes($row["Content"]);
@@ -88,8 +88,8 @@ include_once "common_sidebar.php";
 	</table>
 	<div class="clearfix">&nbsp;</div>
 	<div class="btn-group" role="group" aria-label="Network actions">
-	    <a class="btn btn-secondary ajaxCall" href="/ajax?action=inbox_delete_read" title="Remove readed message"><i class="fa fa-trash" aria-hidden="true"></i> Remove readed messages</a>
-	    <a class="btn btn-secondary ajaxCall" href="/ajax?action=inbox_mark_all_read" title="Mark all as readed"><i class="fa fa-trash" aria-hidden="true"></i> Mark all as readed</a>
+	    <a class="btn btn-secondary ajaxCall" href="/ajax?action=inbox_delete_read" title="Remove readed message"><i class="fa fa-trash" aria-hidden="true"></i>&nbsp;<?php echo _("Remove readed messages"); ?></a>
+	    <a class="btn btn-secondary ajaxCall" href="/ajax?action=inbox_mark_all_read" title="Mark all as readed"><i class="fa fa-trash" aria-hidden="true"></i>&nbsp;<?php echo _("Mark all as readed"); ?></a>
 	</div>
     </div>
 </main>

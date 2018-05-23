@@ -7,8 +7,8 @@
 
 $CFG["db_host"] = "localhost";
 $CFG["db_port"] = "3306";
-$CFG["db_user"] = "nidan";
-$CFG["db_password"] = "nidan";
+$CFG["db_user"] = "";
+$CFG["db_password"] = "";
 $CFG["db_name"] = "nidan";
 
 $CFG["check_updates"] = true;

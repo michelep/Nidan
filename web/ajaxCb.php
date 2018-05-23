@@ -19,7 +19,8 @@ if($mySession->isLogged()) {
 	    $agent = new Agent($agent_id);
 	}
 	echo "<form method='POST' id='ajaxDialog'>
-	<input type='hidden' name='action' value='cb_agent_edit'>";
+	<input type='hidden' name='action' value='cb_agent_edit'>
+	    <input type='hidden' name='nonce' value='".$mySession->getNonce()."'>";
 	if(isset($agent_id)) {
 	    echo "<input type='hidden' name='agent_id' value='$agent_id'>";
 	    $agent_apikey = $agent->apiKey;
@@ -64,7 +65,8 @@ if($mySession->isLogged()) {
 	}
 
 	echo "<form method='POST' id='ajaxDialog'>
-	<input type='hidden' name='action' value='cb_network_edit'>";
+	<input type='hidden' name='action' value='cb_network_edit'>
+	<input type='hidden' name='nonce' value='".$mySession->getNonce()."'>";
 	if(isset($net_id)) {
 	    echo "<input type='hidden' name='net_id' value='$net_id'>";
 	}
@@ -111,6 +113,7 @@ if($mySession->isLogged()) {
 		$net_address = stripslashes($row["Network"]);
 		echo "<form method='POST' id='ajaxDialog'>
 		    <input type='hidden' name='action' value='cb_network_remove'>
+		    <input type='hidden' name='nonce' value='".$mySession->getNonce()."'>
 		    <input type='hidden' name='net_id' value='$net_id'>
 		    <div class='form-group'>
 			<h4>Are you sure ?</h4>
@@ -137,11 +140,96 @@ if($mySession->isLogged()) {
     }
 
     /* ===========================================
+    Add HOST event
+    =========================================== */
+    if($ajax_action == "host_add_event") {
+	if(isset($_GET["id"])) {
+	    if($myUser->getACL('addHostEvents')) {
+		$host_id = intval($_GET["id"]);
+	        $host = new Host($host_id);
+		echo "<form method='POST' id='ajaxDialog'>
+		<input type='hidden' name='action' value='cb_host_add_event'>
+		<input type='hidden' name='nonce' value='".$mySession->getNonce()."'>
+		<input type='hidden' name='host_id' value='$host_id'>
+		<div class='form-group'>
+		    <h2>".sprintf(_("Add an event for %s"),$host->hostname)."</h2>
+		    <p class='help-block'>Add an event for this host, like a failure, a topology change or whatever you need</p>
+		</div><div class='form-group'>
+		    <span class='form-group-addon'>".("Priority").":</span>
+		    <select name='host_event_priority' class='form_control'>
+			<option value='0'>Low</option>
+			<option value='1'>Info</option>
+			<option value='2'>Notice</option>
+			<option value='3'>Warning</option>
+			<option value='4'>Danger</option>
+			<option value='5'>Critical</option>
+		    </select>
+		</div><div class='form-group'>
+		    <span class='form-group-addon'>".("Description").":</span>
+		    <textarea class='form-control expandable' type='text' id='host_event' name='host_event' placeholder='Describe what happens' rows='2'></textarea>
+		</div>
+		</form>";
+	    } else {
+		echo "Access denied";
+	    }
+	}
+    }
+
+    /* ===========================================
+    Edit HOST
+    =========================================== */
+    if($ajax_action == "host_edit") {
+	if(isset($_GET["id"])) {
+	    if($myUser->getACL('editHost')) {
+		$host_id = intval($_GET["id"]);
+	        $host = new Host($host_id);
+		echo "<form method='POST' id='ajaxDialog'>
+		<input type='hidden' name='action' value='cb_host_edit'>
+		<input type='hidden' name='nonce' value='".$mySession->getNonce()."'>
+		<input type='hidden' name='host_id' value='$host_id'>
+		<div class='form-group'>
+		    <span class='form-group-addon'>MAC/Hostname:</span>
+		    <p><b>$host->mac/$host->hostname</b></p>
+		</div><div class='form-group'>
+		    <span class='form-group-addon'>Vendor:</span>
+		    <p><b>".($host->vendor?$host->vendor:getVendorByMAC($host->mac))."</b></p>
+		</div><div class='form-group'>
+		    <span class='form-group-addon'>Note:</span>
+		    <input type='text' id='host_note' name='host_note' class='w-100 validate' value='$host->note'>
+		    <p class='help-block'>"._("Free note about this host")."</p>
+		</div><div class='form-group'>
+		    <span class='form-group-addon'>".("Host type").":</span>
+		    <select name='host_type'>
+			<option value=''>Default</option>
+			<option value='server' ".isSelected($host->type,"server").">"._("Server")."</option>
+			<option value='printer' ".isSelected($host->type,"printer").">"._("Printer")."</option>
+			<option value='phone' ".isSelected($host->type,"phone").">"._("Phone")."</option>
+			<option value='network' ".isSelected($host->type,"network").">"._("Network equipment")."</option>
+			<option value='camera' ".isSelected($host->type,"camera").">"._("Camera")."</option>
+			<option value='iot' ".isSelected($host->type,"iot").">"._("IoT device")."</option>
+		    </select>
+		</div>
+		</form>";
+	    } else {
+		echo "Access denied";
+	    }
+	}
+    }
+
+    /* ===========================================
     Clean JOB queue - Remove old complete jobs
     =========================================== */
     if($ajax_action == "job_clean") {
 	doQuery("DELETE FROM JobsQueue WHERE startDate IS NOT NULL AND endDate IS NOT NULL;");
 	echo "Completed jobs cleared successfully !";
+    }
+
+    /* ===========================================
+    Clean EVENTS queue - Remove all events log
+    =========================================== */
+    if($ajax_action == "events_clean") {
+	doQuery("DELETE FROM EventsLog;");
+	echo "Events log cleared successfully !";
     }
 
     /* ===========================================
@@ -161,22 +249,40 @@ if($mySession->isLogged()) {
     }
 
     /* ===========================================
-    Toggle user ACL
+    Remove GROUP
     =========================================== */
-    if($ajax_action == "acl_toggle") {
-	$acl = sanitize($_GET["acl"]);
-	if($myUser->getACL('manageUsers')) {
-	    if(array_key_exists($acl,$CFG["defaultUserAcl"])) {
-		if($myUser->getACL($acl)) {
-		    $myUser->setACL($acl, false);
-		    echo "ACL disabled";
-		} else {
-		    $myUser->setACL($acl, true);
-		    echo "ACL enabled";
-		}
+    if($ajax_action == "group_remove") {
+
+    }
+
+    /* ===========================================
+    Edit GROUP
+    =========================================== */
+    if($ajax_action == "group_edit") {
+	if($myUser->getACL('manageGroups')) {
+	    echo "<form method='POST' id='ajaxDialog'>
+	    <input type='hidden' name='action' value='cb_group_edit'>
+	    <input type='hidden' name='nonce' value='".$mySession->getNonce()."'>";
+	    if(isset($_GET["id"])) {
+		$group_id = intval(sanitize($_GET["id"]));
+		$tmpGroup = new Group($group_id);
+		echo "<input type='hidden' name='group_id' value='$group_id'>";
 	    }
-	} else {
-	    echo "Sorry, you can't do this";
+	    echo "<div class='form-group'>
+		<span class='form-group-addon'>"._("Group name").":</span>
+		<input type='text' id='group_name' name='group_name' class='form-control w-100 validate[required]' value='$tmpGroup->name'>
+		<p class='help-block'>"._("Choose a name for this user group")."</p>
+	    </div>";
+	    foreach($CFG["defaultAcl"] as $key => $value) {
+    		echo "<div class='form-group row'><div class='form-check'>
+    			<input class='form-check-input' type='checkbox' name='group_$key' id='group_$key' ";
+		if($tmpGroup->ACL[$key]) {
+		    echo "checked";
+		}
+		echo "><label class='form-check-label' for='group_$key'>$key</label>
+		</div></div>";
+	    }
+	    echo "</form>";
 	}
     }
 
@@ -210,43 +316,47 @@ if($mySession->isLogged()) {
 		$tmpUser = new User($user_id);
 	    }
 	    echo "<form method='POST' id='ajaxDialog'>
-	    <input type='hidden' name='action' value='cb_user_edit'>";
+	    <input type='hidden' name='action' value='cb_user_edit'>
+	    <input type='hidden' name='nonce' value='".$mySession->getNonce()."'>";
 	    if(isset($user_id)) {
 		echo "<input type='hidden' name='user_id' value='$user_id'>";
 	    }
 	    echo "<div class='form-group'>
-		<span class='form-group-addon'>User name:</span>
+		<span class='form-group-addon'>"._("User name").":</span>
 		<input type='text' id='user_name' name='user_name' class='form-control w-100 validate[required]' value='$tmpUser->name'>
-		<p class='help-block'>Choose an unique username for this account</p>
+		<p class='help-block'>"._("Choose an unique username for this account")."</p>
 	    </div><div class='form-group'>
-		<span class='form-group-addon'>eMail address:</span>
+		<span class='form-group-addon'>"._("eMail address").":</span>
 		<input type='text' id='user_name' name='user_email' class='form-control w-100 validate[required]' value='$tmpUser->eMail'>
-		<p class='help-block'>Account e-mail address, to be used for notifications and password</p>
+		<p class='help-block'>"._("Account e-mail address, to be used for notifications and password")."</p>
 	    </div><div class='form-group'>
-		<span class='form-group-addon'>User alias:</span>
+		<span class='form-group-addon'>"._("User alias").":</span>
 		<input type='text' id='user_alias' name='user_alias' class='form-control w-100' value='$tmpUser->alias'>
-		<p class='help-block'>You can set an alias for this user</p>
+		<p class='help-block'>"._("You can set an alias for this user")."</p>
 	    </div><div class='form-group'>
-		<span class='form-group-addon'>User rights</span>
-		<div class='btn-group' data-toggle='buttons'>";
-	    foreach(array_keys($CFG["defaultUserAcl"]) as $ACL) {
-		echo "<label class='btn btn-success'>";
-		if(isset($user_id)) {
-		    echo "<input name='acl_$ACL' type='checkbox' ".(($tmpUser->getACL($ACL)) ? "checked":"")." autocomplete='off'> $ACL";
-		} else {
-		    echo "<input name='acl_$ACL' type='checkbox' autocomplete='off'> $ACL";
+		<span class='form-group-addon'>"._("User groups")."</span>
+		<select multiple class='form-control' id='user_groups' name='user_groups[]'>";
+	    $result = doQuery("SELECT ID from Groups;");
+	    if(mysqli_num_rows($result) > 0) {
+		while($row = mysqli_fetch_array($result,MYSQLI_ASSOC)) {
+		    $group_id = $row["ID"];
+		    $tmpGroup = new Group($group_id);
+		    echo "<option value='$group_id' ";
+		    if(in_array($group_id,$tmpUser->Groups)) {
+			echo "selected";
+		    }
+		    echo ">$tmpGroup->name</option>";
 		}
-		echo "</label>";
 	    }
-	    echo "</div>
+	    echo "</select>
 	    </div>";
 	    if(isset($user_id)) {
 		echo "<div class='form-group'>
-		    <input type='checkbox' name='reset_password' ".isChecked($user_id)."> Reset and send new password
-		    <p class='help-block'>If checked, password will be reset and sent via mail to the user</p>
+		    <input type='checkbox' name='reset_password' ".isChecked($user_id)."> "._("Reset and send new password")."
+		    <p class='help-block'>"._("If checked, password will be reset and sent via mail to the user")."</p>
 		</div>";
 	    } else {
-		echo "<p class='help-block'>New user password will be sent via mail to the user's e-mail</p>";
+		echo "<p class='help-block'>"._("New user password will be sent via mail to the user's e-mail")."</p>";
 	    }
 	    echo "</form>";
 	}
@@ -282,7 +392,8 @@ if($mySession->isLogged()) {
 	}
 
 	echo "<form method='POST' id='ajaxDialog'>
-	<input type='hidden' name='action' value='cb_trigger_edit'>";
+	<input type='hidden' name='action' value='cb_trigger_edit'>
+		    <input type='hidden' name='nonce' value='".$mySession->getNonce()."'>";
 	if(isset($trigger_id)) {
 	    echo "<input type='hidden' name='trigger_id' value='$trigger_id'>";
 	}
@@ -351,6 +462,7 @@ if($mySession->isLogged()) {
 	    echo "<form method='POST' id='ajaxDialog'>
 	    <input type='hidden' name='action' value='cb_trigger_remove'>
 	    <input type='hidden' name='trigger_id' value='$trigger_id'>
+	    <input type='hidden' name='nonce' value='".$mySession->getNonce()."'>
 	    <div class='form-group'>
 		<h2>Are your sure ?</h2>
 		<p class='help-block'>Do you really want to remove this trigger ? This operation cannot be undone.</p>
@@ -369,6 +481,7 @@ if($mySession->isLogged()) {
 	    echo "<form method='POST' id='ajaxDialog'>
 	    <input type='hidden' name='action' value='cb_config_edit'>
 	    <input type='hidden' name='config_name' value='$config_name'>
+	    <input type='hidden' name='nonce' value='".$mySession->getNonce()."'>
 	    <div class='form-group'>
 		<span class='form-group-addon'>Field name: <b>$config_name</b>
 	    </div><div class='form-group'>
@@ -376,6 +489,20 @@ if($mySession->isLogged()) {
 		<textarea id='config_value' name='config_value' class='form-control w-100'>".htmlspecialchars($config_value)."</textarea>
 	    </div></form>";
 	}
+    }
+
+    /* ===========================================
+    Import and Export CONFIG
+    =========================================== */
+    if($ajax_action == "config_export") {
+	header('Content-Type: application/xml; charset=utf-8');
+?>
+	<?xml version='1.0' standalone='yes'?>
+<?php
+    }
+
+    if($ajax_action == "config_import") {
+
     }
 
     /* ===========================================
@@ -397,7 +524,7 @@ if($mySession->isLogged()) {
 	if($inbox_id > 0) {
 	    $result = doQuery("SELECT Title, Content, isRead, addDate, readDate FROM Inbox WHERE userId='$myUser->id' AND ID='$inbox_id';");
 	    if(mysqli_num_rows($result) > 0) {
-		$row = mysqli_fetch_array($result,MYSQL_ASSOC);
+		$row = mysqli_fetch_array($result,MYSQLI_ASSOC);
 		$inbox_title = stripslashes($row["Title"]);
 		$inbox_content = stripslashes($row["Content"]);
 		$inbox_is_read = $row["isRead"];
@@ -446,6 +573,27 @@ if($mySession->isLogged()) {
     }
 
     /* ===========================================
+    Network chart JSON Data
+    =========================================== */
+    if($ajax_action == "net_stats") {
+	$net_id = intval($_GET["id"]);
+	if($net_id > 0) {
+    	    $result = doQuery("SELECT DATE(addDate) as date,COUNT(*) as hosts FROM `Hosts` WHERE netId='$net_id' GROUP BY DATE(addDate);");
+	    if(mysqli_num_rows($result) > 0) {
+		$ret_array = array();
+		while($row = mysqli_fetch_array($result,MYSQLI_ASSOC)) {
+		    $date = $row["date"];
+		    $hosts = $row["hosts"];
+		    $ret_array[] = array("date" => $date, "hosts" => $hosts);
+		}
+	    }
+	    header('Content-Type: application/json');
+	    $json = json_encode($ret_array);
+	    echo $json;
+	}
+    }
+
+    /* ===========================================
     TABLES JSON Data
     =========================================== */
     if($ajax_action == "table_get_jobs") {
@@ -485,9 +633,6 @@ if($mySession->isLogged()) {
 
 		$ret_array["rows"][] = array("job" => $job_method, "id" => $job_id, "agent_id" => $job_agent_id, "schedule_date" => $job_scheduledate->format("H:i:s d-M-Y"), "start_date" => ($job_startdate ? $job_startdate->format("H:i:s d-M-Y") : "Not yet"), "end_date" => ($job_enddate ? $job_enddate->format("H:i:s d-M-Y") : "Not yet"), "time_elapsed" => $job_timeelapsed);
 	    }
-	    header('Content-Type: application/json');
-	    $json = json_encode($ret_array);
-	    echo $json;
 	}
     }
 
@@ -511,7 +656,7 @@ if($mySession->isLogged()) {
 		$log_event = stripslashes($row["Event"]);
 		$log_args = $row["Args"];
 
-		$ret_array["rows"][] = array("add_date" => $log_adddate->format("H:i:s d-M-Y"),"event" => $log_event,"agent_id" => $log_agentid,"job_id" => $log_jobid, "args" => $log_args);
+		$ret_array["rows"][] = array("add_date" => $log_adddate->format("H:i:s d-M-Y"),"event" => $log_event,"job_id" => $log_jobid, "args" => $log_args);
 	    }
 
 	    header('Content-Type: application/json');

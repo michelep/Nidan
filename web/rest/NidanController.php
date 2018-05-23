@@ -241,7 +241,7 @@ class NidanController
 		$ip = sanitize($_POST["ip"]); /* IP is mandatory ! */
 		$hostname = (isset($_POST["hostname"])?sanitize($_POST["hostname"]):NULL);
 		$mac = (isset($_POST["mac"])?sanitize($_POST["mac"]):NULL);
-		$vendor = (isset($_POST["vendor"])?sanitize($_POST["vendor"]):NULL);
+		$vendor = (isset($_POST["vendor"])?sanitize($_POST["vendor"]):getVendorByMAC($mac));
 		$state = (isset($_POST["state"])?sanitize($_POST["state"]):NULL);
 
 		$job_id = (isset($_POST["job_id"])?sanitize($_POST["job_id"]):NULL);
@@ -254,14 +254,17 @@ class NidanController
 			/* Check if this host is new or not... */
 			$result = doQuery("SELECT ID FROM Hosts WHERE netId='$job->itemId' AND IP='$ip';");
 			if(mysqli_num_rows($result) > 0) {
-			    /* Host already there: check for changes */
+			    /* Update lastSeen field... */
+		    	    doQuery("UPDATE Hosts SET lastSeen=NOW() WHERE ID='$job->itemId';");
+			    /* And then check for changes */
 			    $row = mysqli_fetch_array($result,MYSQLI_ASSOC);
 			    $host = new Host($row["ID"]);
+
 			    // Prepare array for comparison...
 			    $new_host["hostname"] = (is_null($hostname)?$host->hostname:$hostname);
-			    $new_host["mac"] = (is_null($mac)?$host->mac:$hostname);
-			    $new_host["vendor"] = (is_null($vendor)?$host->hostname:$vendor);
-			    $new_host["state"] = (is_null($hostname)?$host->state:$state);
+			    $new_host["mac"] = (is_null($mac)?$host->mac:$mac);
+			    $new_host["vendor"] = (is_null($vendor)?$host->vendor:$vendor);
+			    $new_host["state"] = (is_null($state)?$host->state:$state);
 		    
 			    $old_host["hostname"] = $host->hostname;
 			    $old_host["mac"] = $host->mac;
@@ -271,21 +274,22 @@ class NidanController
 			    $arr_res = compareArray($new_host,$old_host);
 			    if(count($arr_res) > 0) {
 				//Something has changed...so add this event in cache !
-				$args = array('id' => $host->id, 'hostname' => $host->hostname, 'ip' => $host->ip, 'diff' => $arr_res);
+				$args = array('id' => $host->id, 'ip' => $ip, 'diff' => $arr_res);
 				addEvent($job->id,"host_change",$args);
 				// And update HOST entry with new values...
-				doQuery("UPDATE Hosts SET MAC='".$new_host["mac"]."',Vendor='".$new_host["vendor"]."',Hostname='".$new_host["hostname"]."',State='".$new_host["state"]."',stateChange=NOW() WHERE IP='$ip';");
+				doQuery("UPDATE Hosts SET MAC='".$new_host["mac"]."',Vendor='".mysqli_real_escape_string($DB,$new_host["vendor"])."',Hostname='".mysqli_real_escape_string($DB,$new_host["hostname"])."',State='".$new_host["state"]."',stateChange=NOW() WHERE IP='$ip';");
 			    }
 			    return array("success" => "OK");
 			} else {
 			    // New host: add to DB
-			    doQuery("INSERT INTO Hosts(netId,agentId,IP,MAC,Vendor,Hostname,State,isOnline,addDate,stateChange,checkCycle) VALUES ('$job->itemId','$this->agent_id','$ip','$mac','$vendor','$hostname','$state','1',NOW(),NOW(),10);");
+			    doQuery("INSERT INTO Hosts(netId,agentId,IP,MAC,Vendor,Hostname,State,isOnline,addDate,stateChange,checkCycle,lastSeen) VALUES ('$job->itemId','$this->agent_id','$ip','$mac','".mysqli_real_escape_string($DB,$vendor)."','".mysqli_real_escape_string($DB,$hostname)."','$state','1',NOW(),NOW(),10,NOW());");
 			    $host_id = mysqli_insert_id($DB);
 			    if($host_id > 0) {
 				// Prepare to add this event in the cache...
-				$args = array('id' => $host_id, 'hostname' => $hostname, 'ip' => $ip);
+				$args = array('id' => $host_id, 'hostname' => $hostname, 'ip' => $ip, 'mac' => $mac);
 				addEvent($job->id,"new_host",$args);
-				// $job->addCache($args);
+				// Add event to hosts log
+				doQuery("INSERT INTO HostsLog(hostId,Priority,Description,userId,addDate) VALUES ('$host_id','1','New host added',NULL,NOW());");
 			    }
 			    return array("success" => "OK");
 			}
@@ -322,7 +326,7 @@ class NidanController
 			    $args = array('id' => $host->id, 'hostname' => $host->hostname, 'ip' => $host->ip, 'diff' => $arr_res);
 			    addEvent(NULL,"host_change",$args);
 			    // and update host entry with new values
-			    doQuery("UPDATE Hosts SET MAC='$mac',Vendor='$vendor',Hostname='$hostname',State='$state',stateChange=NOW() WHERE IP='$ip';");
+			    doQuery("UPDATE Hosts SET MAC='$mac',Vendor='".mysqli_real_escape_string($DB,$vendor)."',Hostname='".mysqli_real_escape_string($DB,$hostname)."',State='$state',stateChange=NOW(),lastSeen=NOW() WHERE IP='$ip';");
 			}
 			return array("success" => "OK");
 		    } else {
@@ -330,12 +334,14 @@ class NidanController
 			$net_id = getNetFromIP($ip);
 			if($net_id) {
 			    // New host: add to DB
-			    doQuery("INSERT INTO Hosts(netId,agentId,IP,MAC,Vendor,Hostname,State,isOnline,addDate,stateChange,checkCycle) VALUES ('$net_id','$this->agent_id','$ip','$mac','$vendor','$hostname','$state','1',NOW(),NOW(),10);");
+			    doQuery("INSERT INTO Hosts(netId,agentId,IP,MAC,Vendor,Hostname,State,isOnline,addDate,stateChange,checkCycle,lastSeen) VALUES ('$net_id','$this->agent_id','$ip','$mac','".mysqli_real_escape_string($DB,$vendor)."','".mysqli_real_escape_string($DB,$hostname)."','$state','1',NOW(),NOW(),10,NOW());");
 			    $host_id = mysqli_insert_id($DB);
 			    if($host_id > 0) {
 				// Prepare to add this event in the cache...
 				$args = array('id' => $host_id, 'hostname' => $hostname, 'ip' => $ip);
 				addEvent(NULL,"new_host",$args);
+				// Add event to hosts log
+				doQuery("INSERT INTO HostsLog(hostId,Priority,Description,userId,addDate) VALUES ('$host_id','1','New host added',NULL,NOW());");
 			    }
 			} else {
 
@@ -379,6 +385,10 @@ class NidanController
 		$job = new Job($job_id);
 		// $job->itemId contains hostId
 		if($job) {
+		    // Acquire and lock semaphore based on hostId
+		    $sem = sem_get($job->itemId);
+		    sem_acquire($sem);
+
 		    $result = doQuery("SELECT ID,State,Banner FROM Services WHERE hostId='$job->itemId' AND Port='$port' AND Proto='$proto';");
 		    if(mysqli_num_rows($result) > 0) {
 			// Seems that this service was already there: check for changes
@@ -397,8 +407,6 @@ class NidanController
 			    addEvent($job->id,"service_change",$args);
 			    // $job->addCache($args);
 			}
-
-			return array("success" => "OK");
 		    } else {
 			// New service found
 			doQuery("INSERT INTO Services(hostId,Port,Proto,State,Banner,addDate,lastSeen) VALUES ('$job->itemId','$port','$proto','$state','$banner',NOW(),NOW());");
@@ -410,9 +418,11 @@ class NidanController
 			    addEvent($job->id,"new_service",$args);
 			    // $job->addCache($args);
 			}
-
-			return array("success" => "OK");
 		    }
+		    // Release semaphore
+		    sem_release($sem);
+
+		    return array("success" => "OK");
 		} else {
 		    throw new RestException(500, "Job ID Error");
 		}

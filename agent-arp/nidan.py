@@ -68,12 +68,18 @@ class snifferThread(threading.Thread):
 	if ARP in pkt and pkt[ARP].op in (1,2): #who-has or is-at
 	    host_mac = pkt.sprintf("%ARP.hwsrc%")
 	    host_ip = pkt.sprintf("%ARP.psrc%")
+	    host_name = ''
+
+	    try:
+                host_names = socket.gethostbyaddr(host_ip)
+		host_name = host_names[0]
+            except socket.herror:
+		pass
 
 	    if self.mac_queue.count(host_mac) == 0:
 		# Send HOST to Nidan controller
-		Config.log.debug('Host %s (MAC: %s)' % (host_ip, host_mac))
-	        Config.client.post('/host/add',{"job_id": 0, "ip": host_ip, "mac": host_mac})
-
+		Config.log.debug('Host %s (Name: %s MAC: %s)' % (host_ip, host_name, host_mac))
+	        Config.client.post('/host/add',{"job_id": 0, "ip": host_ip, "hostname": host_name, "mac": host_mac})
 		self.mac_queue.append(host_mac)
 
 # MAIN()

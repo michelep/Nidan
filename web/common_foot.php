@@ -34,6 +34,11 @@ if(file_exists("./js/".$local_js)) {
     echo "\t<!-- local JS -->\n\t<script src=\"/js/".$local_js."\"></script>\n";
 }
 
+if(isset($local_js_code)) {
+    echo "<!--CUSTOM JS CODE--><script>$local_js_code</script><!-- /CUSTOM JS CODE-->\n";
+}
+
+
 $result = doQuery("SELECT ID,Type,Message FROM SessionMessages WHERE sessionId='$mySession->id' ORDER BY addDate DESC;");
 if(mysqli_num_rows($result) > 0) {
 ?>

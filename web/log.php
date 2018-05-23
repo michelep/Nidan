@@ -7,7 +7,7 @@ if(!$mySession->isLogged()) {
     exit();
 }
 
-$pageTitle = "Event Log";
+$pageTitle = _("Event Log");
 
 include "common_head.php"; 
 
@@ -26,12 +26,16 @@ include_once "common_sidebar.php";
                data-page-list="[5, 10, 20, 50, 100, 200]"
                data-search="true">
             <thead><tr>
-		<th data-field="add_date" data-sortable="true">Date Time</th>
-		<th data-field="event" data-sortable="true">Event</th>
-		<th data-field="job_id" data-sortable="true">Job ID</th>
-		<th data-field="args" data-sortable="true">Args</th>
+		<th data-field="add_date" data-sortable="true"><?php echo _("Date Time"); ?></th>
+		<th data-field="event" data-sortable="true"><?php echo _("Event"); ?></th>
+		<th data-field="job_id" data-sortable="true"><?php echo _("Job ID"); ?></th>
+		<th data-field="args" data-sortable="true"><?php echo _("Args"); ?></th>
 	    </tr></thead>
 	</table>
+    </div>
+    <div class="clearfix">&nbsp;</div>
+    <div class="btn-group" role="group" aria-label="Actions">
+	<a class="btn btn-secondary ajaxCall" href="/ajax?action=events_clean"><i class="fa fa-recycle" aria-hidden="true"></i>&nbsp;<?php echo _("Clean Events Log"); ?></a>
     </div>
 </main>
 

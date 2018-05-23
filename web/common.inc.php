@@ -2,7 +2,7 @@
 
 // ============================ VERSIONING
 
-define("VERSION","0.0.2");
+define("VERSION","0.0.3");
 
 // ============================
 
@@ -17,13 +17,20 @@ require_once __DIR__."/PhpConsole/__autoload.php";
 require_once "config.inc.php";
 
 // ============================ Default user ACL
-$CFG["defaultUserAcl"] = array(
+$CFG["defaultUserGroups"] = array(
+    1
+);
+
+$CFG["defaultAcl"] = array(
     'canLogin' => true,
     'manageUsers' => false,
     'manageSystem' => false,
     'manageNetworks' => true,
     'manageAgents' => true,
     'manageTriggers' => true,
+    'manageGroups' => false,
+    'editHost' => false,
+    'addHostEvents' => true,
 );
 
 $CFG["defaultNetworkPrefs"] = array(
@@ -50,6 +57,22 @@ if(empty($sessionId)) {
 }
 
 // ===========================
+
+// ============================ Localization
+if((function_exists('locale_accept_from_http'))&&(isset($_SERVER['HTTP_ACCEPT_LANGUAGE']))) {
+    $gbLang = locale_accept_from_http($_SERVER['HTTP_ACCEPT_LANGUAGE']);
+} else if(isset($_SERVER['HTTP_ACCEPT_LANGUAGE'])) {
+    $gbLang = $_SERVER['HTTP_ACCEPT_LANGUAGE'];
+} else {
+    $gbLang = "en_US"; /* Default */
+}
+
+setlocale(LC_ALL, $gbLang);
+bindtextdomain("messages","./lang");
+bind_textdomain_codeset("messages", "UTF-8");
+textdomain("messages");
+
+// ==========================
 
 // ============================ DBMS
 
@@ -82,7 +105,7 @@ if(!empty($post_action)) {
 	$auth_email = mysqli_real_escape_string($DB,sanitize($_POST["email"]));
 	$auth_password = mysqli_real_escape_string($DB,sanitize($_POST["password"]));
 
-	$result = doQuery("SELECT ID FROM Users WHERE (eMail='$auth_email' OR Name='$auth_email') AND Password=PASSWORD('$auth_password');");
+	$result = doQuery("SELECT ID,lastLogin FROM Users WHERE (eMail='$auth_email' OR Name='$auth_email') AND Password=PASSWORD('$auth_password');");
 	if(mysqli_num_rows($result) > 0) {
 	    $row = mysqli_fetch_array($result,MYSQLI_ASSOC);
 
@@ -94,7 +117,11 @@ if(!empty($post_action)) {
 	        doQuery("UPDATE Sessions SET userId='$myUser->id' WHERE ID='$mySession->id';");
 		doQuery("UPDATE Users SET lastlogin=NOW() WHERE ID='$myUser->id';");
 
-	        $mySession->sendMessage("Welcome back ".$myUser->getName());
+		if(is_null($row["lastLogin"])) { /* First login */
+		    $mySession->sendMessage("Welcome ".$myUser->getName()."! Remember to change your password from <a href='/profile'>profile</a> page.");
+		} else {
+		    $mySession->sendMessage("Welcome back ".$myUser->getName());
+		}
 
 		addEvent(NULL,'user_login',array('user_id' => $myUser->id,'ip' => getClientIP()));
 	    } else {
@@ -127,77 +154,90 @@ if(!empty($post_action)) {
 	// User add or edit CB
 	//
 	if($post_action == "cb_user_edit") {
-	    if($myUser->getACL('manageUsers')) {
-		$user_id = intval($_POST["user_id"]);
-	        $user_email = mysqli_real_escape_string($DB,sanitize($_POST["user_email"]));
-		$user_name = mysqli_real_escape_string($DB,sanitize($_POST["user_name"]));
-	        $user_alias = mysqli_real_escape_string($DB,sanitize($_POST["user_alias"]));
+    	    if($mySession->checkNonce(sanitize($_POST["nonce"]))) {
+		if($myUser->getACL('manageUsers')) {
+		    $user_id = intval($_POST["user_id"]);
+		    $user_email = mysqli_real_escape_string($DB,sanitize($_POST["user_email"]));
+		    $user_name = mysqli_real_escape_string($DB,sanitize($_POST["user_name"]));
+		    $user_alias = mysqli_real_escape_string($DB,sanitize($_POST["user_alias"]));
 
-		$user_password = APG(5);
+		    $user_password = APG(5);
 
-		if($user_id > 0) {
-		    // Update existing account
-		    doQuery("UPDATE Users SET Name='$user_name',eMail='$user_email',Alias='$user_alias' WHERE ID='$user_id';");
-		    $mySession->sendMessage("User $user_id updated successfully !");
-		} else {
-		    // Create new
-		    doQuery("INSERT INTO Users(Name,eMail,Password,Alias,addDate) VALUES ('$user_name','$user_email',PASSWORD('$user_password'),'$user_alias',NOW());");
-		    $mySession->sendMessage("User $user_id created successfully !");
-		    $user_id = mysqli_insert_id($DB);
-		    // Send mail
-		    $msg = "Dear $user_name,<br/>now you can login on <a href='%host%'>%host%</a> using the following credentials<br/><br/>username: $user_name<br/>password: $user_password<br/><br/>Have fun!";
-		    sendMail($user_email, $user_name, "Welcome to Nidan",$msg);
-		    //
-	        }
-
-		$tmpUser = new User($user_id);
-		foreach(array_keys($CFG["defaultUserAcl"]) as $ACL) {
-		    if(isset($_POST["acl_".$ACL]) and ($_POST["acl_".$ACL] == "on")) {
-			$tmpUser->setACL($ACL,true);
+		    if($user_id > 0) {
+			// Update existing account
+		        doQuery("UPDATE Users SET Name='$user_name',eMail='$user_email',Alias='$user_alias' WHERE ID='$user_id';");
+			$mySession->sendMessage("User $user_id updated successfully !");
 		    } else {
-			$tmpUser->setACL($ACL,false);
+			// Create new
+			doQuery("INSERT INTO Users(Name,eMail,Password,Alias,addDate) VALUES ('$user_name','$user_email',PASSWORD('$user_password'),'$user_alias',NOW());");
+			$mySession->sendMessage("User $user_id created successfully !");
+			$user_id = mysqli_insert_id($DB);
+			// Send mail
+			$msg = "Dear $user_name,<br/>now you can login on <a href='%host%'>%host%</a> using the following credentials<br/><br/>username: $user_name<br/>password: $user_password<br/><br/>Have fun!";
+			sendMail($user_email, $user_name, "Welcome to Nidan",$msg);
+		        //
+	            }
+
+		    $tmpUser = new User($user_id);
+		    doQuery("DELETE FROM UserGroups WHERE userId='$user_id';");
+		    foreach($_POST["user_groups"] as $user_group) {
+			doQuery("INSERT INTO UserGroups(userId,groupId,addDate) VALUES ('$user_id','$user_group',NOW());");
+		    }
+
+		    if($_POST["reset_password"] == "on") {
+			doQuery("UPDATE Users SET Password=PASSWORD('$user_password') WHERE ID='$user_id';");
+			// Send e-mail with new password
+			$msg = "Dear $tmpUser->name,<br/> your new password is $user_password<br/><br/>Have fun!";
+			sendMail($tmpUser->eMail, $tmpUser->name, "Nidan password",$msg);
+			//
 		    }
 		}
-
-		if($_POST["reset_password"] == "on") {
-		    doQuery("UPDATE Users SET Password=PASSWORD('$user_password') WHERE ID='$user_id';");
-		    // Send e-mail with new password
-		    $msg = "Dear $tmpUser->name,<br/> your new password is $user_password<br/><br/>Have fun!";
-		    sendMail($tmpUser->eMail, $tmpUser->name, "Nidan password",$msg);
-		    //
-		}
+	    } else {
+		$mySession->sendMessage("Invalid NONCE","warning");
 	    }
 	}
 	//
 	// User remove CB
 	//
 	if($post_action == "cb_user_remove") {
-	    if($myUser->getACL('manageUsers')) {
-		$user_id = intval($_POST["user_id"]);
-		doQuery("DELETE FROM Users WHERE ID='$user_id';");
-		$mySession->sendMessage("User $user_id removed !");
+    	    if($mySession->checkNonce(sanitize($_POST["nonce"]))) {
+		if($myUser->getACL('manageUsers')) {
+		    $user_id = intval($_POST["user_id"]);
+		    doQuery("DELETE FROM Users WHERE ID='$user_id';");
+		    $mySession->sendMessage("User $user_id removed !");
+		}
+	    } else {
+		$mySession->sendMessage("Invalid NONCE","warning");
 	    }
 	}
 	//
 	// Agent add or edit CB
 	//
 	if($post_action == "cb_agent_edit") {
-	    $agent_id = intval(sanitize($_POST["agent_id"]));
-	    $agent_name = mysqli_real_escape_string($DB,$_POST["agent_name"]);
-	    $agent_apikey = mysqli_real_escape_string($DB,$_POST["agent_apikey"]);
-	    $agent_desc = mysqli_real_escape_string($DB,$_POST["agent_desc"]);
+	    if($mySession->checkNonce(sanitize($_POST["nonce"]))) {
+		if($myUser->getACL('manageAgents')) {
+	    	    $agent_id = intval(sanitize($_POST["agent_id"]));
+		    $agent_name = mysqli_real_escape_string($DB,$_POST["agent_name"]);
+	    	    $agent_apikey = mysqli_real_escape_string($DB,$_POST["agent_apikey"]);
+		    $agent_desc = mysqli_real_escape_string($DB,$_POST["agent_desc"]);
 
-	    $agent_isenable = 0;
-	    if($_POST["is_enable"] == "on") {
-		$agent_isenable = 1;
-	    }
+	    	    $agent_isenable = 0;
+		    if($_POST["is_enable"] == "on") {
+			$agent_isenable = 1;
+		    }
 
-	    if($agent_id > 0) { // UPDATE
-		doQuery("UPDATE Agents SET Name='$agent_name',Description='$agent_desc',apiKey='$agent_apikey',isEnable=$agent_isenable WHERE ID='$agent_id';");
-		$mySession->sendMessage("Agent $agent_name updated successfully !");
-	    } else { // Create NEW
-		doQuery("INSERT INTO Agents (Name,apiKey,Description,isEnable,addDate) VALUES ('$agent_name','$agent_apikey','$agent_desc',$agent_isenable,NOW());");
-		$mySession->sendMessage("Agent $agent_name added successfully !");
+		    if($agent_id > 0) { // UPDATE
+			doQuery("UPDATE Agents SET Name='$agent_name',Description='$agent_desc',apiKey='$agent_apikey',isEnable=$agent_isenable WHERE ID='$agent_id';");
+			$mySession->sendMessage("Agent $agent_name updated successfully !");
+		    } else { // Create NEW
+			doQuery("INSERT INTO Agents (Name,apiKey,Description,isEnable,addDate) VALUES ('$agent_name','$agent_apikey','$agent_desc',$agent_isenable,NOW());");
+			$mySession->sendMessage("Agent $agent_name added successfully !");
+		    }
+	        } else {
+		    $mySession->sendMessage("Not allowed to do this","error");
+		}
+	    } else {
+		$mySession->sendMessage("Invalid NONCE","warning");
 	    }
 	}
 
@@ -205,100 +245,183 @@ if(!empty($post_action)) {
 	// Network add or edit CB
 	//
 	if($post_action == "cb_network_edit") {
-	    $net_id = intval(sanitize($_POST["net_id"]));
-	    $net_address = mysqli_real_escape_string($DB,$_POST["net_address"]);
-	    $net_desc = mysqli_real_escape_string($DB,$_POST["net_desc"]);
-	    $net_agentid = ($_POST["net_agentid"] ? intval($_POST["net_agentid"]):0);
-	    $net_checkcycle = intval((empty($_POST["net_checkcycle"]) ? 10 : sanitize($_POST["net_checkcycle"])));
+    	    if($mySession->checkNonce(sanitize($_POST["nonce"]))) {
+		if($myUser->getACL('manageNetworks')) {
+		    $net_id = intval(sanitize($_POST["net_id"]));
+		    $net_address = mysqli_real_escape_string($DB,$_POST["net_address"]);
+		    $net_desc = mysqli_real_escape_string($DB,$_POST["net_desc"]);
+		    $net_agentid = ($_POST["net_agentid"] ? intval($_POST["net_agentid"]):0);
+		    $net_checkcycle = intval((empty($_POST["net_checkcycle"]) ? 10 : sanitize($_POST["net_checkcycle"])));
 
-	    $net_isenable = 0;
-	    if($_POST["is_enable"] == "on") {
-		$net_isenable = 1;
-	    }
+		    $net_isenable = 0;
+		    if($_POST["is_enable"] == "on") {
+			$net_isenable = 1;
+		    }
 
-	    if($net_id > 0) { // UPDATE
-		doQuery("UPDATE Networks SET Network='$net_address',Description='$net_desc',agentId='$net_agentid',checkCycle='$net_checkcycle',isEnable=$net_isenable,chgDate=NOW() WHERE ID='$net_id';");
-		$mySession->sendMessage("Network $net_address updated successfully !");
-	    } else { // Create NEW
-		doQuery("INSERT INTO Networks (Network,Description,agentId,isEnable,checkCycle,addDate) VALUES ('$net_address','$net_desc',$net_agentid,$net_isenable,'$net_checkcycle',NOW());");
-		$mySession->sendMessage("New network $net_address created successfully !");
+		    if($net_id > 0) { // UPDATE
+			doQuery("UPDATE Networks SET Network='$net_address',Description='$net_desc',agentId='$net_agentid',checkCycle='$net_checkcycle',isEnable=$net_isenable,chgDate=NOW() WHERE ID='$net_id';");
+			$mySession->sendMessage("Network $net_address updated successfully !");
+		    } else { // Create NEW
+			doQuery("INSERT INTO Networks (Network,Description,agentId,isEnable,checkCycle,addDate) VALUES ('$net_address','$net_desc',$net_agentid,$net_isenable,'$net_checkcycle',NOW());");
+			$mySession->sendMessage("New network $net_address created successfully !");
+		    }
+		} else {
+		    $mySession->sendMessage("Not allowed to do this","error");
+		}
+	    } else {
+		$mySession->sendMessage("Invalid NONCE","warning");
 	    }
 	}
 	//
 	// Network remove CB
 	//
 	if($post_action == "cb_network_remove") {
-	    $net_id = intval(sanitize($_POST["net_id"]));
-	    // #TODO
+	    if($mySession->checkNonce(sanitize($_POST["nonce"]))) {
+		$net_id = intval(sanitize($_POST["net_id"]));
+		// #TODO
+	    }
 	}
+	//
+	// Group edit CB
+	//
+	if($post_action == "cb_group_edit") {
+	    if($mySession->checkNonce(sanitize($_POST["nonce"]))) {
+		if($myUser->getACL('manageGroups')) {
+		    $group_id = sanitize($_POST["group_id"]);
+		    $tmpGroup = new Group($group_id);
+		    foreach(array_keys($CFG["defaultAcl"]) as $key) {
+			if($_POST["group_$key"] == "on") {
+			    $tmpGroup->setACL($key,true);
+			} else {
+			    $tmpGroup->setACL($key,false);
+			}
+		    }
+		    $mySession->sendMessage("Rights for group $tmpGroup->name updated !");
+		}
+	    } else {
+		$mySession->sendMessage("Invalid NONCE","warning");
+	    }
+	}
+
 	//
 	// Config edit CB
 	//
 	if($post_action == "cb_config_edit") {
-	    $config_name = sanitize($_POST["config_name"]);
-	    if(strlen($config_name) > 0) {
-	        $config_value = sanitize($_POST["config_value"]);
-		$myConfig->set($config_name,$config_value);
-	        $mySession->sendMessage("Configuration field $config_name updated !");
+	    if($mySession->checkNonce(sanitize($_POST["nonce"]))) {
+		$config_name = sanitize($_POST["config_name"]);
+		if(strlen($config_name) > 0) {
+		    $config_value = sanitize($_POST["config_value"]);
+		    $myConfig->set($config_name,$config_value);
+	    	    $mySession->sendMessage("Configuration field $config_name updated !");
+		}
+	    } else {
+		$mySession->sendMessage("Invalid NONCE","warning");
 	    }
 	}
 	//
 	// Trigger remove CB
 	//
 	if($post_action == "cb_trigger_remove") {
-	    $trigger_id = intval(sanitize($_POST["trigger_id"]));
-	    if($trigger_id > 0) {
-		doQuery("DELETE FROM Triggers WHERE ID='$trigger_id';");
-		$mySession->sendMessage("Trigger $trigger_id deleted successfully !");
+	    if($mySession->checkNonce(sanitize($_POST["nonce"]))) {
+		$trigger_id = intval(sanitize($_POST["trigger_id"]));
+		if($trigger_id > 0) {
+		    doQuery("DELETE FROM Triggers WHERE ID='$trigger_id';");
+	    	    $mySession->sendMessage("Trigger $trigger_id deleted successfully !");
+		}
+	    } else {
+		$mySession->sendMessage("Invalid NONCE","warning");
 	    }
 	}
 	//
 	// Trigger edit CB
 	//
 	if($post_action == "cb_trigger_edit") {
-	    $trigger_id = intval(sanitize($_POST["trigger_id"]));
-	    $trigger_agentid = intval(sanitize($_POST["trigger_agentid"]));
-	    $trigger_event = mysqli_real_escape_string($DB,sanitize($_POST["trigger_event"]));
-	    $trigger_action = mysqli_real_escape_string($DB,sanitize($_POST["trigger_action"]));
-	    $trigger_priority = mysqli_real_escape_string($DB,sanitize($_POST["trigger_priority"]));
-	    $trigger_args = mysqli_real_escape_string($DB,sanitize($_POST["trigger_args"]));
+	    if($mySession->checkNonce(sanitize($_POST["nonce"]))) {
+		$trigger_id = intval(sanitize($_POST["trigger_id"]));
+		$trigger_agentid = intval(sanitize($_POST["trigger_agentid"]));
+		$trigger_event = mysqli_real_escape_string($DB,sanitize($_POST["trigger_event"]));
+		$trigger_action = mysqli_real_escape_string($DB,sanitize($_POST["trigger_action"]));
+		$trigger_priority = mysqli_real_escape_string($DB,sanitize($_POST["trigger_priority"]));
+		$trigger_args = mysqli_real_escape_string($DB,sanitize($_POST["trigger_args"]));
 
-	    if($_POST["is_enable"] == 'on') {
-		$trigger_isenable = 1;
+		if($_POST["is_enable"] == 'on') {
+		    $trigger_isenable = 1;
+		} else {
+		    $trigger_isenable = 0;
+		}
+
+		if($trigger_id > 0) { // Update trigger
+		    doQuery("UPDATE Triggers SET agentId=".($trigger_agentid ? $trigger_agentid:'NULL').",Event='$trigger_event',Action='$trigger_action',Priority='$trigger_priority',Args='$trigger_args',isEnable=$trigger_isenable WHERE ID='$trigger_id';");
+		    $mySession->sendMessage("Trigger $trigger_event updated successfully !");
+		} else { // Add a trigger
+		    doQuery("INSERT INTO Triggers(agentId,Event,Action,Priority,Args,userId,isEnable,lastProcessed,addDate) VALUES (".($trigger_agentid ? $trigger_agentid:'NULL').",'$trigger_event','$trigger_action','$trigger_priority','$trigger_args','$mySession->userId',$trigger_isenable,NOW(),NOW());");
+		    $trigger_id = mysqli_insert_id($DB);
+		    $mySession->sendMessage("New trigger $trigger_id on $trigger_event added successfully !");
+		}
 	    } else {
-		$trigger_isenable = 0;
-	    }
-
-	    if($trigger_id > 0) { // Update trigger
-		doQuery("UPDATE Triggers SET agentId=".($trigger_agentid ? $trigger_agentid:'NULL').",Event='$trigger_event',Action='$trigger_action',Priority='$trigger_priority',Args='$trigger_args',isEnable=$trigger_isenable WHERE ID='$trigger_id';");
-		$mySession->sendMessage("Trigger $trigger_event updated successfully !");
-	    } else { // Add a trigger
-		doQuery("INSERT INTO Triggers(agentId,Event,Action,Priority,Args,userId,isEnable,lastProcessed,addDate) VALUES (".($trigger_agentid ? $trigger_agentid:'NULL').",'$trigger_event','$trigger_action','$trigger_priority','$trigger_args','$mySession->userId',$trigger_isenable,NOW(),NOW());");
-		$trigger_id = mysqli_insert_id($DB);
-		$mySession->sendMessage("New trigger $trigger_id on $trigger_event added successfully !");
+		$mySession->sendMessage("Invalid NONCE","warning");
 	    }
 	}
 	//
 	// Account CB
 	//
 	if($post_action == "cb_account_edit") {
-	    $account_id = intval($_POST["user_id"]);
-	    $account_email = sanitize($_POST["user_email"]);
-	    $account_name = sanitize($_POST["user_name"]);
-	    $account_password = sanitize($_POST["user_password"]);
-	    $account_password_val = sanitize($_POST["user_password_val"]);
-	    $account_alias = sanitize($_POST["user_alias"]);
+	    if($mySession->checkNonce(sanitize($_POST["nonce"]))) {
+	        $account_id = intval($_POST["user_id"]);
+		$account_email = sanitize($_POST["user_email"]);
+		$account_name = sanitize($_POST["user_name"]);
+		$account_password = sanitize($_POST["user_password"]);
+		$account_password_val = sanitize($_POST["user_password_val"]);
+		$account_alias = sanitize($_POST["user_alias"]);
 
-	    if(strlen($account_password > 0)) {
-		if(strcmp($account_password,$account_password_val)==0) {
-		    doQuery("UPDATE Users SET Name='$account_name','Password'='$account_password',Email='$account_email',Alias='$account_alias' WHERE ID='$account_id';");
-		    $mySession->sendMessage("Account $account_id updated successfully !");
+		if(strlen($account_password > 0)) {
+		    if(strcmp($account_password,$account_password_val)==0) {
+			doQuery("UPDATE Users SET Name='$account_name','Password'='$account_password',Email='$account_email',Alias='$account_alias' WHERE ID='$account_id';");
+			$mySession->sendMessage("Account $account_id updated successfully !");
+		    } else {
+			$mySession->sendMessage("Password don't match: try again !","error");
+		    }
 		} else {
-		    $mySession->sendMessage("Password don't match: try again !","error");
+		    doQuery("UPDATE Users SET Name='$account_name',eMail='$account_email',Alias='$account_alias' WHERE ID='$account_id';");
+		    $mySession->sendMessage("Account $account_id updated successfully !");
 		}
 	    } else {
-		doQuery("UPDATE Users SET Name='$account_name',eMail='$account_email',Alias='$account_alias' WHERE ID='$account_id';");
-		$mySession->sendMessage("Account $account_id updated successfully !");
+		$mySession->sendMessage("Invalid NONCE","warning");
+	    }
+	}
+	//
+	// Host CB Edit
+	//
+	if($post_action == "cb_host_edit") {
+	    if($mySession->checkNonce(sanitize($_POST["nonce"]))) {
+		$host_id = sanitize(intval($_POST["host_id"]));
+		
+		$host_note = mysqli_escape_string($DB,sanitize($_POST["host_note"]));
+		$host_type = mysqli_escape_string($DB,sanitize($_POST["host_type"]));
+
+		doQuery("UPDATE Hosts SET Note='$host_note',Type='$host_type' WHERE ID='$host_id';");
+
+		$mySession->sendMessage("Host note and type updated successfully !");
+	    } else {
+		$mySession->sendMessage("Invalid NONCE","warning");
+	    }
+	}
+	//
+	// Host CB Add Event
+	//
+	if($post_action == "cb_host_add_event") {
+	    if($mySession->checkNonce(sanitize($_POST["nonce"]))) {
+		$host_id = sanitize(intval($_POST["host_id"]));
+		if($host_id > 0) {
+		    $host_event = mysqli_escape_string($DB,sanitize($_POST["host_event"]));
+		    $host_event_priority = sanitize(intval($_POST["host_event_priority"]));
+		    
+		    doQuery("INSERT INTO HostsLog(hostId,Priority,Description,userId,addDate) VALUES ('$host_id','$host_event_priority','$host_event','$myUser->id',NOW());");
+
+		    $mySession->sendMessage("Host event added successfully !");
+		}
+	    } else {
+		$mySession->sendMessage("Invalid NONCE","warning");
 	    }
 	}
     }
@@ -524,6 +647,7 @@ function sendMail($toEmail, $toName, $subject, $message) {
 class Session {
     var $id;
     var $userId=false;
+    var $nonce;
 
     function __construct($ID) {
 	/* Cancella tutte le sessioni piu vecchie di 1 ora */
@@ -534,10 +658,11 @@ class Session {
 	    doQuery("INSERT INTO Sessions (ID,IP,lastAction) VALUES ('$ID','".getClientIP()."',NOW()) ON DUPLICATE KEY UPDATE lastAction=NOW();");
 	    $this->id = $ID;
 
-	    $result = doQuery("SELECT userId FROM Sessions WHERE ID='$ID';");
+	    $result = doQuery("SELECT userId,nonce FROM Sessions WHERE ID='$ID';");
 	    if(mysqli_num_rows($result) > 0) {
 		$row = mysqli_fetch_array($result,MYSQLI_ASSOC);
 	        $this->userId = $row["userId"];
+		$this->nonce = $row["nonce"];
 	    } else {
 		$this->userId = false;
 	    }
@@ -555,6 +680,21 @@ class Session {
 
     function isLogged() {
 	if($this->userId > 0) {
+	    return true;
+	} else {
+	    return false;
+	}
+    }
+
+    function getNonce() {
+	$nonce = md5(APG(10));
+	doQuery("UPDATE Sessions SET nonce='$nonce' WHERE ID='$this->id';"); // Create NONCE
+	return $nonce;
+    }
+
+    function checkNonce($nonce) {
+	doQuery("UPDATE Sessions SET nonce=NULL WHERE ID='$this->id';"); // Destroy NONCE
+	if(strcmp($nonce,$this->nonce)==0) {
 	    return true;
 	} else {
 	    return false;
@@ -606,6 +746,48 @@ class Config {
     }
 }
 
+class Group {
+    var $id;
+    var $name;
+    var $ACL=array();
+
+    function __construct($id) {
+	global $CFG;
+
+	foreach($CFG["defaultAcl"] as $key => $value) {
+	    $this->ACL[$key] = $value;
+	}
+
+	$result = doQuery("SELECT ID,Name,ACL FROM Groups WHERE ID='$id';");
+	if(mysqli_num_rows($result) > 0) {
+	    $row = mysqli_fetch_array($result,MYSQLI_ASSOC);
+
+	    $this->id = $row["ID"];
+	    $this->name = stripslashes($row["Name"]);
+
+	    if(!empty($row["ACL"])) {
+		foreach(unserialize(stripslashes($row["ACL"])) as $key => $value) {
+		    $this->ACL[$key] = $value;
+		}
+	    }
+	}
+    }
+
+    public function setACL($name, $value) {
+	$this->ACL[$name] = $value;
+    }
+
+    public function getACL($name) {
+    	return $this->ACL[$name];
+    }
+
+    function __destruct() {
+	global $DB;
+	// Save ACL array
+	$tmp_acl = mysqli_real_escape_string($DB,serialize($this->ACL));
+	doQuery("UPDATE Groups SET ACL='$tmp_acl' WHERE ID='$this->id';");
+    }
+}
 
 class User {
     var $id=false;
@@ -614,10 +796,11 @@ class User {
     var $loginETA;
     var $alias;
     var $ACL;
+    var $Groups=array(); // User groups
 
     function __construct($id) {
 	global $CFG;
-	$result = doQuery("SELECT ID,Name,Alias,eMail,ACL,DATEDIFF(NOW(),lastLogin) AS loginETA FROM Users WHERE ID='$id';");
+	$result = doQuery("SELECT ID,Name,Alias,eMail,DATEDIFF(NOW(),lastLogin) AS loginETA FROM Users WHERE ID='$id';");
 	if(mysqli_num_rows($result) > 0) {
 	    $row = mysqli_fetch_array($result,MYSQLI_ASSOC);
 	    $this->id = $row["ID"];
@@ -626,33 +809,32 @@ class User {
 	    $this->alias = stripslashes($row["Alias"]);
 	    $this->loginETA = $row["loginETA"];
 
-	    $this->loadACL();
 
-	    // User ACL values
-	    if(!empty($row["ACL"])) {
-		foreach(unserialize(stripslashes($row["ACL"])) as $key => $value) {
-	    	    $this->ACL[$key] = $value;
+	    // Gruppi utente
+	    $result = doQuery("SELECT groupId FROM UserGroups WHERE userId='$this->id';");
+	    if(mysqli_num_rows($result) > 0) {
+		while($row = mysqli_fetch_array($result,MYSQLI_ASSOC)) {
+		    if(!in_array($row["groupId"],$this->Groups)) {
+			$this->Groups[] = $row["groupId"];
+		    }
+		}
+	    } else {
+		// ...oppure assegna gruppi di default
+		foreach($CFG["defaultUserGroups"] as $groupId) {
+		    $this->Groups[] = $groupId;
+		}
+	    }
+	    // Preleva le ACL dei gruppi e popola variabile ACL...
+	    foreach($this->Groups as $groupId) {
+		$tmpGroup = new Group($groupId);
+		foreach($tmpGroup->ACL as $key => $value) {
+		    $this->ACL[$key] = $value;
 		}
 	    }
 	}
     }
 
-    function __destruct() {
-	global $DB;
-	// Save ACL array
-	$tmp_acl = mysqli_real_escape_string($DB,serialize($this->ACL));
-	doQuery("UPDATE Users SET ACL='$tmp_acl' WHERE ID='$this->id';");
-    }
-
-    function loadACL() {
-	global $CFG;
-	// Populate ACL
-	foreach($CFG["defaultUserAcl"] as $name => $value) {
-	    $this->ACL[$name] = $value;
-	}
-    }
-
-    function getName() {
+    public function getName() {
 	if(isset($this->Alias)) {
 	    return $this->Alias;
 	} else {
@@ -662,12 +844,7 @@ class User {
 
     /* Return value of specific ACL */
     public function getACL($name) {
-    	return $this->ACL[$name];
-    }
-
-    /* Set value of specific ACL */
-    public function setACL($name,$value) {
-	$this->ACL[$name] = $value;
+	return $this->ACL[$name];
     }
 }
 
@@ -697,7 +874,11 @@ class Network {
 		$this->hostsCount = $row["HostsCount"];
 		$this->agentid = $row["agentId"];
     		$this->addDate = new DateTime($row["addDate"]);
-    		$this->lastCheck = new DateTime($row["lastCheck"]);
+		if(!is_null($row["lastCheck"])) {
+    		    $this->lastCheck = new DateTime($row["lastCheck"]);
+		} else {
+		    $this->lastCheck = false;
+		}
     		$this->checkCycle = $row["checkCycle"];
 		$this->scanTime = $row["scanTime"];
 
@@ -744,8 +925,12 @@ class Host {
     var $vendor;
     var $hostname;
     var $state;
+    var $note;
+    var $type;
     var $isOnline;
     var $lastCheck;
+    var $lastSeen;
+    var $lastSeenETA;
     var $scanTime;
     var $addDate;
     var $stateChange;
@@ -753,7 +938,7 @@ class Host {
 
     function __construct($id=false) {
 	if($id) {
-	    $result = doQuery("SELECT ID,netId,agentId,IP,MAC,Vendor,Hostname,State,isOnline,lastCheck,scanTime,addDate,stateChange,checkCycle,chgDate FROM Hosts WHERE ID='$id';");
+	    $result = doQuery("SELECT ID,netId,agentId,IP,MAC,Vendor,Hostname,Note,State,Type,isOnline,lastCheck,scanTime,addDate,stateChange,lastSeen,TIMESTAMPDIFF(MINUTE,lastSeen,NOW()) AS lastSeenETA,checkCycle,chgDate FROM Hosts WHERE ID='$id';");
 	    if(mysqli_num_rows($result) > 0) {
 		$row = mysqli_fetch_array($result,MYSQLI_ASSOC);
 		$this->id = $row["ID"];
@@ -762,10 +947,24 @@ class Host {
 		$this->ip = $row["IP"];
 		$this->mac = $row["MAC"];
 		$this->vendor = stripslashes($row["Vendor"]);
-		$this->hostname = stripslashes($row["Hostname"]);
+
+		if(strlen($row["Hostname"]) > 0) {
+		    $this->hostname = $row["Hostname"];
+		} else {
+	    	    $this->hostname = $this->ip;
+		}
+
+		$this->note = stripslashes($row["Note"]);
 		$this->state = $row["State"];
+		$this->type = $row["Type"];
 		$this->isOnline = $row["isOnline"];
-		$this->lastCheck = new DateTime($row["lastCheck"]);
+		$this->lastSeen = new DateTime($row["lastSeen"]);
+		$this->lastSeenETA = $row["lastSeenETA"];
+		if(!is_null($row["lastCheck"])) {
+		    $this->lastCheck = new DateTime($row["lastCheck"]);
+		} else {
+		    $this->lastCheck = false;
+		}
 		$this->scanTime = $row["scanTime"];
 		$this->addDate = new DateTime($row["addDate"]);
 		$this->stateChange = new DateTime($row["stateChange"]);
@@ -788,6 +987,39 @@ class Host {
 	    return false;
 	}
     }
+
+    function getVendor() {
+	if(strlen($this->vendor) > 0) {
+	    return $this->vendor;
+	} else {
+	    $vendor = getVendorByMAC($this->mac);
+	    if($vendor) {
+		return $vendor;
+	    } else {
+		return "still unknown";
+	    }
+	}
+    }
+
+    function getTypeIcon() {
+	switch($this->type) {
+	    case "server":
+		return "fa-server";
+	    case "printer":
+		return "fa-print";
+	    case "phone":
+		return "fa-phone-square";
+	    case "network":
+		return "fa-tasks";
+	    case "camera":
+		return "fa-video-camera";
+	    case "iot":
+		return "fa-hdd-o";
+	    default:
+		return "fa-laptop"; // Default is a laptop icon
+	}
+    }
+
 }
 
 class Job {
@@ -928,7 +1160,7 @@ class Agent {
     var $IP;
     var $hostName;
     var $Version;
-    var $Plugins;
+    var $Plugins=array();
     var $isEnable;
     var $isOnline;
     var $addDate;
@@ -962,9 +1194,11 @@ class Agent {
 
     function isAble($action) {
 	/* Check if this agent in able to do $action job */
-	if(in_array($action,$this->Plugin)) {
-	    return true;
-	} 
+	if(is_array($this->Plugins)) {
+	    if(in_array($action,$this->Plugins)) {
+		return true;
+	    }
+	}
 	return false;
     }
 
@@ -985,10 +1219,39 @@ class Agent {
 
 }
 
+function MACisValid($mac) {
+  return (preg_match('/([a-fA-F0-9]{2}[:|\-]?){6}/', $mac) == 1);
+}
+
+function getVendorByMAC($mac) {
+    global $myConfig;
+    if(MACisValid($mac)) {
+	$api_token = $myConfig->get("macvendors_token");
+	if($api_token) {
+	    $url = "https://api.macvendors.com/v1/lookup/" . urlencode($mac);
+	    $ch = curl_init();
+	    curl_setopt($ch, CURLOPT_HTTPHEADER, ['Authorization: Bearer '.$api_token]);
+	    curl_setopt($ch, CURLOPT_URL, $url);
+	    curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+	    $response = curl_exec($ch);
+	    $response = json_decode($response);
+	    if (empty($response)) {
+		return false;
+	    } elseif ($data = $response->data) {
+		return $data["organization_name"];
+	    } elseif ($errors = $response->errors) {
+		return false;
+	    }
+	}
+    } else {
+	return false;
+    }
+}
+
 function compareArray($new, $old) {
     if(is_array($new)&&is_array($old)) {
-	$added = array_diff_assoc($new, $old);
-	$removed = array_diff_assoc($old, $new);
+	$added = array_diff_assoc($old, $new);
+	$removed = array_diff_assoc($new, $old);
 
 	$result = array();
 

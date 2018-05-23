@@ -1,6 +1,6 @@
 <?php
 
-include "common.inc.php";
+include __DIR__ . "/common.inc.php";
 
 //
 // Check for periodic network scan
@@ -83,7 +83,8 @@ if(mysqli_num_rows($result) > 0) {
 	$job_id = intval($row["jobId"]);
 	$tmp_job = new Job($job_id);
 
-	$args = stripslashes($row["Args"]);
+	$args = json_decode(stripslashes($row["Args"]),true);
+
 	$eta = intval($row["ETA"]);
 	$add_date = new DateTime($row["addDate"]);
 
@@ -116,10 +117,11 @@ if(mysqli_num_rows($result) > 0) {
 		    </blockquote>";
 		}
 
-		$msg .= "by Agent Id $agent_id:<br/>
-		<blockquote>
-		    ".print_r($args, true)."
-		</blockquote><br/>
+		$msg .= "by Agent Id $agent_id:<br/><ul>";
+		foreach($args as $key => $value) {
+		    $msg .= "<li>".trim($key).":".trim($value)."<li/>";
+		}
+		$msg .= "</ul><br/>
 		Your tireless employee, Nidan<br/>";
 		// ==============>
 

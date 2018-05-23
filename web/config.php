@@ -34,7 +34,7 @@ include_once "common_sidebar.php";
 		    <td>$config_name</td>
 		    <td>".htmlspecialchars($config_value)."</td>
 		    <td>
-			<a class='ajaxDialog' title='Edit field' href='/ajax?action=config_edit&name=$config_name'><i class='fa fa-pencil-square' aria-hidden='true'></i></a>
+			<a class='ajaxDialog' title='Edit field' href='/ajax?action=config_edit&name=$config_name'><i class='fa fa-pen-square' aria-hidden='true'></i></a>
 		    </td>
 		</tr>";
 	    }
@@ -43,7 +43,8 @@ include_once "common_sidebar.php";
 	</tbody></table>
 	<div class="clearfix">&nbsp;</div>
 	<div class="btn-group" role="group" aria-label="Actions">
-	    <a class="btn btn-secondary ajaxCall" href="/ajax?action=mail_test"><i class="fa fa-envelope-o" aria-hidden="true"></i> Send test mail </a>
+	    <a class="btn btn-secondary ajaxCall" href="/ajax?action=mail_test"><i class="far fa-envelope"></i> Send test mail </a>
+	    <a class="btn btn-secondary ajaxCall" href="/ajax?action=config_export"><i class="far fa-save"></i> Export config</a>
 	</div>
     </div>
 </main>

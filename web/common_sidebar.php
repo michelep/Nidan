@@ -52,6 +52,9 @@ if($myUser->getACL('manageUsers')) {
 	<li class="nav-item">
 	    <a class="nav-link <?php isActive('/users'); ?>" href="/users">Users</a>
 	</li>
+	<li class="nav-item">
+	    <a class="nav-link <?php isActive('/groups'); ?>" href="/groups">Groups</a>
+	</li>
 <?php
 }
 ?>

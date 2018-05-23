@@ -29,25 +29,28 @@ include "common_head.php";
 
 include_once "common_sidebar.php";
 
+$local_js_code = "$(document).ready(function() {
+    draw_net_chart($net_id);
+});";
 
 ?>
 <main class="col-sm-9 offset-sm-3 col-md-10 offset-md-2 pt-3" id="contentDiv">
     <h2>Details for <?php echo "$net_desc ($net_address)"; ?></h2>
     <div class="row">
-	<canvas id="netChart" width="800" height="400"></canvas>
+	<canvas id="net_chart" width="800" height="400"></canvas>
     </div>
 <?php
-    echo "<a href='/host/?net=$net_id'>Hosts in $net_address</a>";
 ?>
     <div class="clearfix">&nbsp;</div>
     <div class="btn-group" role="group" aria-label="Network actions">
-	<a class="btn btn-secondary ajaxCall" href="/ajax?action=network_refresh"><i class="fa fa-refresh" aria-hidden="true"></i> Force rescan </a>
+	<a class="btn btn-secondary" href="/host/?net=<?php echo $net_id; ?>"><i class="fa fa-bars" aria-hidden="true"></i> Hosts in <?php echo $net_address; ?></a>
+	<a class="btn btn-secondary ajaxCall" href="/ajax?action=network_refresh"><i class="fa fa-reload" aria-hidden="true"></i> Force rescan </a>
 	<a class="btn btn-secondary ajaxDialog" href="/ajax?action=network_remove&id=<?php echo $net_id; ?>" title="Remove network <?php echo $net_address; ?>"><i class="fa fa-trash" aria-hidden="true"></i> Remove </a>
     </div>
 </main>
 
 <?php
 
-include "common_foot.php"; 
+include "common_foot.php";
 
 ?>

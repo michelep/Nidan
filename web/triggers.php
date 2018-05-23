@@ -43,9 +43,9 @@ if(mysqli_num_rows($result) > 0) {
 	    <td>$trigger_raised</td>
 	    <td>";
 	if($myUser->getACL('manageTriggers')) {
-	    echo "<a class='btn btn-secondary ajaxDialog' href='/ajax?action=trigger_edit&id=$trigger_id' title='Edit trigger'><i class='fa fa-pencil' aria-hidden='true'></i></a>
-		<a class='btn btn-secondary ajaxCall' href='/ajax?action=trigger_clear&id=$trigger_id' title='Clear trigger counter'><i class='fa fa-circle-o text-warning' aria-hidden='true'></i></a>
-		<a class='btn btn-secondary ajaxDialog' href='/ajax?action=trigger_remove&id=$trigger_id' title='Remove trigger'><i class='fa fa-times text-danger' aria-hidden='true'></i></a>";
+	    echo "<a class='btn btn-secondary ajaxDialog' href='/ajax?action=trigger_edit&id=$trigger_id' title='Edit trigger'><i class='fas fa-edit' aria-hidden='true'></i></a>
+		<a class='btn btn-secondary ajaxCall' href='/ajax?action=trigger_clear&id=$trigger_id' title='Clear trigger counter'><i class='fas fa-redo text-warning' aria-hidden='true'></i></a>
+		<a class='btn btn-secondary ajaxDialog' href='/ajax?action=trigger_remove&id=$trigger_id' title='Remove trigger'><i class='fas fa-trash-alt text-danger' aria-hidden='true'></i></a>";
 	}
 	echo "    </td>
 	</tr>";

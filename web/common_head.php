@@ -26,7 +26,7 @@ if(isset($pageTitle)) {
     <link href="/css/bootstrap.min.css" rel="stylesheet">
     <link href="/css/tether.min.css" rel="stylesheet">
     <link href="/css/animate.css" rel="stylesheet">
-    <link href="/css/font-awesome.min.css" rel="stylesheet">
+    <link href="/css/fontawesome-all.min.css" rel="stylesheet">
     <link href="/css/bootstrap-table.min.css" rel="stylesheet">
     <link href="/css/validationEngine.jquery.css" rel="stylesheet">
     <link href="/css/jquery-ui.min.css" rel="stylesheet">
@@ -41,11 +41,11 @@ if(file_exists("./css/".$local_css)) {
 }
 ?>
 </head><body>
-    <nav class="navbar navbar-toggleable-md navbar-inverse fixed-top bg-inverse">
+    <nav class="navbar navbar-toggleable-md navbar-dark fixed-top bg-dark">
+	<a class="navbar-brand" href="/"><img src="/img/header_logo.png" class="img-responsive header-logo" alt="Nidan logo"/> Nidan <small class="header">v.<?php echo VERSION; ?></small></a>
 	<button class="navbar-toggler navbar-toggler-right hidden-lg-up" type="button" data-toggle="collapse" data-target="#navbarTop" aria-controls="navbarTop" aria-expanded="false" aria-label="Toggle navigation">
 	    <span class="navbar-toggler-icon"></span>
 	</button>
-	<a class="navbar-brand" href="/"><img src="/img/header_logo.png" class="img-responsive header-logo" alt="Nidan logo"/> Nidan <small class="header">v.<?php echo VERSION; ?></small></a>
 <?php
 if($mySession->isLogged()) {
 ?>

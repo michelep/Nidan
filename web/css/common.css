@@ -108,3 +108,25 @@ small.header {
     -ms-transform: rotate(-44deg);
     transform: rotate(-44deg);
 }
+
+/*
+ * Textarea expandable
+ */
+
+textarea.expandable {
+  height:40px;
+  -webkit-transition: all 0.5s ease-in-out;
+}
+
+textarea.expandable:hover, textarea.expandable:focus {
+  height:calc(100% - 90px);
+  -webkit-transition: all 0.8s ease-in-out;
+}
+      
+.panel-300:hover, .panel-300 {
+  height:300px;
+}
+
+textarea.expandable + textarea.expandable:hover, textarea.expandable + textarea.expandable:focus {
+  height:calc(100% - 90px)
+}

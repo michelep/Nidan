@@ -1,37 +1,49 @@
-function drawLineChart(netid) {
+function draw_net_chart(netid) {
     var jsonData = $.ajax({
-	url: '/ajaxCb.php?action=getNetStats&id='+netid,
+	url: '/ajax/?action=net_stats&id='+netid,
 	method: 'GET',
 	dataType: 'json',
 	success: function(result) {
-	    renderGraph(result.labels,result.points);
+	    render_graph(result);
 	}
     });
 }
 
-function renderGraph(labels, points) {
-    ctx = document.getElementById("netChart").getContext("2d");
+function render_graph(data) {
+    var array_data = new Array();
+    var array_hosts = new Array();
 
-    var lineChartData = {
-	labels: labels,
-        datasets: [{
-            label: "Views",
-            fillColor: "rgba(220,220,220,0.2)",
-            strokeColor: "rgba(220,220,220,1)",
-            pointColor: "rgba(220,220,220,1)",
-            pointStrokeColor: "#fff",
-            pointHighlightFill: "#fff",
-            pointHighlightStroke: "rgba(220,220,220,1)",
-            data: points,
-        }]
-    };
+    for(var i=0,len=data.length;i<len;i++) {
+	array_data[i] = data[i].date;
+	array_hosts[i] = data[i].hosts;
+    }
 
-    var lineChartOptions = {
-    };
+    var ctx = document.getElementById('net_chart');
 
-    var myChart = new Chart(ctx, {
-	type: 'line',
-	data: lineChartData,
-	options: lineChartOptions
-    });
+    var config = {
+        type: 'bar',
+        data: {
+    	    labels: array_data,
+	    datasets: [{
+	        label: 'Hosts',
+	        backgroundColor: window.chartColors.red,
+	        borderColor: window.chartColors.red,
+	        data: array_hosts,
+		fill: false,
+	    }]
+	},
+	options: {
+	    responsive: true,
+	    scales: {
+		xAxes: [{
+		    stacked: true,
+		}],
+		yAxes: [{
+		    stacked: true
+		}]
+	    }
+	}
+    }
+
+    var myChart = new Chart(ctx, config);
 }

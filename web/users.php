@@ -24,12 +24,12 @@ if($myUser->getACL('manageUsers')) {
     		<th>Username</th>
 		<th>eMail</th>
 		<th>lastLogin</th>
-		<th>ACL</th>
+		<th>Groups</th>
 		<th></th>
 	    </tr>
 	</thead><tbody>
 <?php
-	$result = doQuery("SELECT ID,Name,eMail,Alias,ACL,addDate,lastLogin FROM Users ORDER BY Name;");
+	$result = doQuery("SELECT ID,Name,eMail,Alias,addDate,lastLogin FROM Users ORDER BY Name;");
 	if(mysqli_num_rows($result) > 0) {
 	    while($row = mysqli_fetch_array($result,MYSQLI_ASSOC)) {
 	        $user_id = $row["ID"];
@@ -44,9 +44,15 @@ if($myUser->getACL('manageUsers')) {
 		    <td>$user_name</td>
 		    <td>$user_email</td>
 		    <td>".($user_lastlogin ? $user_lastlogin->format("H:i:s d-M-Y"): "None")."</td>
-		    <td></td>
+		    <td>";
+		$tmpUser = new User($user_id);
+		foreach($tmpUser->Groups as $groupId) {
+		    $tmpGroup = new Group($groupId);
+		    echo "<span class='badge badge-pill badge-info'> $tmpGroup->name </span>&nbsp;";
+		}
+		echo "</td>
 		    <td>
-			<a class='btn ajaxDialog' title='Edit user' href='/ajax?action=user_edit&id=$user_id'><i class='fa fa-pencil-square' aria-hidden='true'></i></a>
+			<a class='btn ajaxDialog' title='Edit user' href='/ajax?action=user_edit&id=$user_id'><i class='fa fa-pen-square' aria-hidden='true'></i></a>
 	    		<a class='btn ajaxDialog' title='Remove user' href='/ajax?action=user_remove&id=$user_id'><i class='fa fa-times text-danger' aria-hidden='true'></i></a>
 		    </td>
 		</tr>";

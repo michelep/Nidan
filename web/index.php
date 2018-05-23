@@ -58,62 +58,62 @@ if(rand(1,10) > 7) { // Add some fuzzyness
     <div class="row">
         <div class="col-lg-3 col-md-6">
             <div class="card card-inverse card-success">
-                <div class="card-block bg-success">
+                <div class="card-body card-block bg-success">
                     <div class="rotate">
                         <i class="fa fa-cubes fa-5x"></i>
                     </div>
-                    <h6 class="text-uppercase">Networks</h6>
-                    <h1 class="display-1">
+                    <h6 class="card-title text-uppercase"><?php echo _("Networks"); ?></h6>
+                    <h3 class="card-subtitle display-3">
 		    <?php 
 		    $result = doQuery("SELECT ID FROM Networks;");
 		    echo mysqli_num_rows($result);
 		    ?>
-		    </h1>
+		    </h3>
     		</div>
 	    </div>
 	</div><div class="col-lg-3 col-md-6">
             <div class="card card-inverse card-danger">
-                <div class="card-block bg-danger">
+                <div class="card-body card-block bg-danger">
                     <div class="rotate">
                         <i class="fa fa-laptop fa-4x"></i>
                     </div>
-                    <h6 class="text-uppercase">Hosts</h6>
-                    <h1 class="display-1">
+                    <h6 class="card-title text-uppercase"><?php echo _("Hosts"); ?></h6>
+                    <h3 class="card-subtitle display-3">
 		    <?php
 		    $result = doQuery("SELECT ID FROM Hosts;");
 		    echo mysqli_num_rows($result);
 		    ?>
-		    </h1>
+		    </h3>
                 </div>
             </div>
         </div><div class="col-lg-3 col-md-6">
             <div class="card card-inverse card-info">
-                <div class="card-block bg-info">
+                <div class="card-body card-block bg-info">
                     <div class="rotate">
                         <i class="fa fa-cogs fa-5x"></i>
                     </div>
-                    <h6 class="text-uppercase">Services</h6>
-                    <h1 class="display-1">
+                    <h6 class="card-title text-uppercase"><?php echo _("Services"); ?></h6>
+                    <h3 class="card-subtitle display-3">
 		    <?php
 		    $result = doQuery("SELECT ID FROM Services;");
 		    echo mysqli_num_rows($result);
 		    ?>
-		    </h1>
+		    </h3>
                 </div>
             </div>
         </div><div class="col-lg-3 col-md-6">
             <div class="card card-inverse card-warning">
-                <div class="card-block bg-warning">
+                <div class="card-body card-block bg-warning">
                     <div class="rotate">
                         <i class="fa fa-plug fa-5x"></i>
                     </div>
-                    <h6 class="text-uppercase">Agents Online</h6>
-                    <h1 class="display-1">
+                    <h6 class="card-title text-uppercase"><?php echo _("Agents Online"); ?></h6>
+                    <h3 class="card-subtitle display-3">
 		    <?php
 		    $result = doQuery("SELECT ID FROM Agents WHERE isOnline=1;");
 		    echo mysqli_num_rows($result);
 		    ?>
-		    </h1>
+		    </h3>
                 </div>
     	    </div>
     	</div>
@@ -123,13 +123,13 @@ if(rand(1,10) > 7) { // Add some fuzzyness
     <div class="table-responsive">
 	<table class="table table-striped"><thead>
 	    <tr>
-    		<th>Network</th>
-		<th>Description</th>
-		<th>Hosts</th>
-		<th>Agent</th>
-		<th>Added on</th>
-		<th>Last check</th>
-		<th>Scan time</th>
+    		<th><?php echo _("Network"); ?></th>
+		<th><?php echo _("Description"); ?></th>
+		<th><?php echo _("Hosts"); ?></th>
+		<th><?php echo _("Agent"); ?></th>
+		<th><?php echo _("Added on"); ?></th>
+		<th><?php echo _("Last check"); ?></th>
+		<th><?php echo _("Scan time"); ?></th>
 		<th></th>
 	    </tr>
 	</thead><tbody>
@@ -164,7 +164,7 @@ if(mysqli_num_rows($result) > 0) {
 	    <td>".($net_scantime ? $net_scantime." secs" : "Not done yet !")."</td>
 	    <td>";
 	if($myUser->getACL('manageNetworks')) {
-		echo "<a class='ajaxDialog' title='Edit network' href='/ajax?action=network_edit&id=$net_id'><i class='fa fa-pencil-square' aria-hidden='true'></i></a></td>";
+		echo "<a class='ajaxDialog' title='Edit network' href='/ajax?action=network_edit&id=$net_id'><i class='fa fa-pen-square' aria-hidden='true'></i></a></td>";
 	}
 	echo "</tr>";
     }
@@ -178,7 +178,7 @@ if(mysqli_num_rows($result) > 0) {
 if($myUser->getACL('manageNetworks')) {
 ?>
     <div class="btn-group" role="group" aria-label="Network actions">
-	<a class="btn btn-secondary ajaxDialog" href="/ajax?action=network_edit" title="Add new network"><i class="fa fa-plus-circle" aria-hidden="true"></i> Add new network</a>
+	<a class="btn btn-secondary ajaxDialog" href="/ajax?action=network_edit" title="Add new network"><i class="fa fa-plus-circle" aria-hidden="true"></i>&nbsp;<?php echo _("Add new network"); ?></a>
     </div>
 <?php
 }
