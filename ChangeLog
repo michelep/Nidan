@@ -1,0 +1,91 @@
+0.0.4 - 02 Aug 2019
+* [Web Gui] Improved install procedure and prevent accidental re-installation
+* [Web Gui] Update Bootstrap framework to 4.3.1
+* [Web Gui] Minor fixes and cleanups
+* [Agent] Moved to only one agent based on Scapy (https://scapy.net/)
+* [Agent] Added net_scan method
+* [Agent] Some improvements and bug fixes
+
+0.0.3 - 22 May 2018
+* [Web Gui] Start internationalization
+* [Web Gui] Move to Boostrap 4.1 and Charts.js 2.7.1
+* [Web Gui] Added user groups management
+* [Web Gui] Improved host page
+* [Web Gui] Adding custom events to hosts, like issue, changes and so on
+* [Web Gui] Minor fixed and cleanups
+* [Agent Arp] Added hostname resolution for detected hosts
+* [DB] Added Groups table
+* [DB] Added UserGroups table
+* [DB] Added HostsLog table for host related events
+
+0.0.2 - 22 Dec 2017 - Merry Xmas !
+* [Web Gui] Added Inbox for event notifications (added in trigger too)
+* [Web Gui] Some improvements with search by IP
+* [Web Gui] Hostname defined in configuration
+* [Web Gui] Lot of changes and bug fixes
+* [DB] Changes in Agents table
+* [Agent] Some minor cleanups
+* [Agent] Added arp sniffer agent (beta)
+* [Agent] Start working on plugin capabilities for agents
+
+0.0.1 - 18 Oct 2017
+* [Web Gui] Installer improved
+* [Web Gui] Some minor fixes and improvements
+* [Agent] Added null logging handler
+
+0.0.1rc9 - 13 Oct 2017
+* [Web Gui] Added cron watchdog
+* [Web Gui] Fix pagination bug
+* [Web Gui] Some improvements in cron script
+* [Web Gui] Miscellaneous minor bugs fixed and some improvements
+* [DB] Added primary key ID in EventsLog table
+
+0.0.1rc8 - 02 Oct 2017
+* [Web Gui] Fix notification and some other minor bugs
+* [Web Gui] Added cleanup for old events
+* [Web Gui] Fix some bugs in users management
+* [Web Gui] Version check
+* [Agent] Added multithreading parallel scanning (define threads_max in config file)
+* [Agent] Removed daemonizing support, because of signaling issue
+* [DB] Added new fields in Config and JobsQueue tables
+
+0.0.1rc7 - 28 Sep 2017
+* [Web Gui] Fixed some minor bugs
+* [Web Gui] Some improvements in installer
+* [Web Gui] Added "send test e-mail" in configuration page
+* [Agent] Added setup.py for easy building of agents
+
+0.0.1pre6 - 25 Sep 2017
+* [Web Gui] Fixed a bug on DB version comparison
+* [Web Gui] Added support for PHP Console debugging tool (https://github.com/barbushin/php-console)
+* [Web Gui] Fix a typo in login procedure
+* [DB] Some changes on DB structure, move to 0.0.1pre6
+
+0.0.1pre5 - 18 Sep 2017
+* [Web Gui] Minor cleanups and fixes
+* [Agent] Add support for daemonizing,logging and version check
+
+0.0.1pre4 - 15 Sep 2017
+* [Web Gui] Timeout check for agents and new trigger 'agent_offline'
+* [Web Gui] Some improvements in trigger handling
+* [Web Gui] Implemented trigger deletion
+* [Web Gui] Updated phpmailer to latest release
+* [Web Gui] Some configuration moved to DB table
+* [Web Gui] Added users rights support
+* [Agent] Added support for dynamic scanning method, passing custom args on job
+
+0.0.1pre3 - 11 Sep 2017
+* [Web Gui] Fix an issue in search result page
+* [Web Gui] Minor fixes
+* [Web Gui] Fixed a bug in net and host comparison
+* [Agent] Disabled invalid SSL Certificate warning
+
+0.0.1pre2 - 5 Sep 2017
+* [Web Gui] Added pagination in Hosts page
+* [Web Gui] Nidan summary with cards in first page
+* [Web Gui] Search for hosts and services now work
+* [Agent] Basic banner grabbing now works. Needs more improvements, like retry on timeout and service detection: added in TODO list
+* [Agent] Other minor changes
+
+0.0.1pre1 - 4 Sep 2017
+* First public pre-release
